@@ -143,7 +143,7 @@ function loadFile(i) {
     if (i<runs) {
         doc.close();
         doc.write('<script>var start = (new Date()).getTime();</script>');
-        doc.write('<script id="test" src="'+filename+'.js"></script>');
+        doc.write('<script id="test" src="'+filename+'"></script>');
         doc.write('<script>top.data['+i+'] = ['+i+', (new Date()).getTime() - start];</script>');
         doc.write('<script>var e=document.getElementById("test"); e.parentNode.removeChild(e);</script>');
         doc.write('<script>window.setTimeout(function(){top.loadFile('+(i+1)+');}, 0);</script>');
@@ -162,7 +162,7 @@ var blocking = (match('Safari') && !match('Chrome') && match('Version/4')) || ma
 function runInit() {
     runs = parseInt(YAHOO.util.Dom.get('num-runs').value||'3');
     data = new Array(runs);
-    filename = 'test-data/'+YAHOO.util.Dom.get('js-file').value;
+    filename = YAHOO.util.Dom.get('js-file').value;
 }
 
 

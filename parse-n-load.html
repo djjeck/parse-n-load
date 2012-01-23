@@ -52,26 +52,16 @@
 
     <fieldset>
       File:
-      <select id="js-file">
-        <option value="yui3-min">YUI3 (311KB, minified)</option>
-        <option value="yui2-min">YUI2 (390KB, minified)</option>
-        <option value="jquery-ui-1.7.2-min">jQueryUI 1.7.2 (379KB, minified)</option>
-        <option value="scriptaculous-min">Scriptaculous (159KB, minified)</option>
-        <option value="github">Github application (211KB, minified)</option>
-        <option>---</option>
-        <option value="scriptaculous-raw">Scriptaculous (265KB, raw)</option>
-        <option value="yui2-raw">YUI2 (1,510KB, raw)</option>
-        <option value="yui3-raw">YUI3 (1,355KB, raw)</option>
-      </select>
+      <input type="text" id="js-file" />
       &nbsp;&nbsp;
       Runs: <input type="text" size="4" maxlength="4" id="num-runs" value="1000" />
       &nbsp;&nbsp;
       <small><input type="checkbox" id="ignore-spikes" checked="checked" /> 95th percentile</small>
       &nbsp;&nbsp;
 
-      <select id="test-version">
-        <option value="1">Test V1 (doc.write)</option>
-        <option value="2" selected>Test V2 (respawn iframe)</option>
+      <select id="test-version" disabled="disabled">
+        <option value="1" selected>Test V1 (doc.write)</option>
+        <option value="2">Test V2 (respawn iframe)</option>
       </select>
 
       <button id="run-test" onclick="runTest();"><b>Run Test</b></button>
