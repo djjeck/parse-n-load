@@ -10,9 +10,8 @@ var PARSE = 1;
 var PARSE_AS_STRING = 2;
 var PARSE_AND_EVALUATE = 3;
 var PARSE_AS_STRING_AND_EVALUATE = 4;
-var LABELS = [
-    'Simple', 'Parse only', 'Parse as string', 'Parse, then evaluate', 'eval() call'
-    ];
+var LABELS = ['Simple', 'Parse only', 'Parse as string', 'Parse, then evaluate', 'eval() call'];
+var COLORS = ['#DD1111','#11DD11','#1111DD','#449944','#444499'];
 var testcases = 5;
 
 function init() {
@@ -119,12 +118,12 @@ function flotPlot(data) {
                               '<div><b>Mean Average:</b> ',mean.toFixed(0),' msecs</div>',
                               '<div><b>Std. Deviation:</b> ',variance.toFixed(1),' msecs</div>']
                             .join('');
-        data[testcase] = {label: LABELS[testcase], data: data[testcase]};
+        data[testcase] = {
+            color: COLORS[testcase],
+            label: LABELS[testcase],
+            data: data[testcase]};
     }
-    YAHOO.widget.Flot("flot", data,
-                      {color:2,
-                       lines:{show:true}
-                      });
+    YAHOO.widget.Flot("flot", data, { lines:{show:true} });
     YAHOO.util.Dom.get('browser-icon').src = 'img/icon-'+icon+'.png';
 }
 
