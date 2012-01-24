@@ -1,10 +1,3 @@
-
-//unfortunately you can't get the path of a file input.
-// function runTest() {
-//     var files = YAHOO.util.Dom.get('js-file').files;
-//     console.log(files[0]);
-// }
-
 var SIMPLE = 0;
 var PARSE = 1;
 var PARSE_AS_STRING = 2;
@@ -23,7 +16,6 @@ function init() {
     window.doc = YAHOO.util.Dom.get('js').contentWindow.document;
     window.win = YAHOO.util.Dom.get('js').contentWindow;
     window.script = {
-         filename: null,
          code: null
     };
     window.runs = 3;
@@ -165,35 +157,12 @@ function delel(el) {
     el.parentNode.removeChild(el);
 }
 
-function recordTrial(msec) {
-    data[testcase][i] = [i, msec];
-    if (i<runs) {
-        testcase = (testcase+1)%testcases;
-        if(testcase == 0) i += 1;
-        loadFile2();
-    } else {
-        plotData(data);
-    }
-}
-
-function loadFile2() {
-    delel(jsframe);
-    jsframe = document.createElement('iframe');
-    jsframe.is = 'js';
-    jsframe.src = script.filename + '.html';
-    document.body.appendChild(jsframe);
-}
-
 //for non-blocking browsers. careful not to blow the stack.
 function loadFile(i, testcase) {
     if (i<runs) {
         doc.close();
         doc.write('<script>var start = (new Date()).getTime();</script>');
-        doc.write('<script id="test" '+
-        (script.filename?
-            'src="'+script.filename+'">':
-            '>'+makeCodeFor(script.code, testcase))+
-        '</script>');
+        doc.write('<script id="test">'+makeCodeFor(script.code, testcase)+'</script>');
         doc.write('<script>top.data['+testcase+']['+i+'] = ['+i+', (new Date()).getTime() - start];</script>');
         doc.write('<script>var e=document.getElementById("test"); e.parentNode.removeChild(e);</script>');
         testcase = (testcase+1)%testcases;
@@ -236,18 +205,12 @@ function runInit() {
     runs = parseInt(YAHOO.util.Dom.get('num-runs').value||'3');
     data = new Array(testcases);
     for(var i=0;i<testcases; i++) data[i] = new Array(runs);
-    script.filename = YAHOO.util.Dom.get('js-file').value;
     script.code = YAHOO.util.Dom.get('js-code').value;
 }
 
 
 function runTest() {
     runInit();
-
-    if (YAHOO.util.Dom.get('test-version').value === '2') {
-        loadFile2();
-        return;
-    }
 
     // Safari 4 blocks when writing script tags. Firefox does not.
     // Chrome does not block, but the naive code path blows the
@@ -258,11 +221,7 @@ function runTest() {
             for (var testcase=0; testcase<testcases; testcase++) {
                 doc.open();
                 var start = time();
-                doc.write('<script id="test" '+
-                (script.filename?
-                    'src="'+script.filename+'">':
-                    '>'+makeCodeFor(script.code, testcase))+
-                '</script>');
+                doc.write('<script id="test">'+makeCodeFor(script.code, testcase)+'</script>');
                 doc.write('<script>var e=document.getElementById("test"); e.parentNode.removeChild(e);</script>');
                 doc.close();
                 data[testcase][i] = [i, (new Date()).getTime() - start];

@@ -25,6 +25,11 @@
         padding: 20px;
         background-color: #DDD;
       }
+      #js-code {
+        font-size: 10px;
+        width: 75%;
+        height: 250px;
+      }
       #progress {
         width: 600px;
         font-size: smaller;
@@ -59,25 +64,14 @@
   <body>
     <h2>Parse-n-Load Javascript Test Harness</h2>
     <fieldset>
-      Choose file path (relative or absolute)
-      <input type="text" id="js-file" />
-      or
+      Paste your code here
       <br />
-      paste your code here
-      <br />
-      <textarea id="js-code" cols="60" rows="10"></textarea>
-      <br />
-      <br />
+      <textarea id="js-code"></textarea>
+      <br /><br />
       Runs: <input type="text" size="4" maxlength="4" id="num-runs" value="200" />
       &nbsp;&nbsp;
       <small><input type="checkbox" id="ignore-spikes" checked="checked" /> 95th percentile</small>
-      &nbsp;&nbsp;
-
-      <select id="test-version" disabled="disabled">
-        <option value="1" selected>Test V1 (doc.write)</option>
-        <option value="2">Test V2 (respawn iframe)</option>
-      </select>
-
+      <br /><br />
       <button id="run-test" onclick="runTest();"><b>Run Test</b></button>
     </fieldset>
 
