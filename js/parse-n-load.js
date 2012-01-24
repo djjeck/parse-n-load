@@ -10,16 +10,18 @@ var PARSE = 1;
 var PARSE_AS_STRING = 2;
 var PARSE_AND_EVALUATE = 3;
 var PARSE_AS_STRING_AND_EVALUATE = 4;
-var LABELS = ['Simple', 'Parse only', 'Parse as string', 'Parse, then evaluate', 'eval() call'];
-var COLORS = ['#DD1111','#11DD11','#1111DD','#449944','#444499'];
 var testcases = 5;
+var EVALUATE_PARSED = 5;
+var EVALUATE_PARSED_AS_STRING = 6;
+var extendedTestcases = 7;
+var LABELS = ['Simple', 'Parse only', 'Parse as string', 'Parse, then evaluate', 'Parse and call eval()', 'Evaluate parsed', 'Call eval()'];
+var COLORS = ['#DD1111','#11DD11','#1111DD','#11DD11','#1111DD','#11DD11','#1111DD'];
 
 function init() {
     window.data = [[],[],[],[],[]];
     window.jsframe = YAHOO.util.Dom.get('js');
     window.doc = YAHOO.util.Dom.get('js').contentWindow.document;
     window.win = YAHOO.util.Dom.get('js').contentWindow;
-    window.progress = YAHOO.util.Dom.get('progress');
     window.script = {
          filename: null,
          code: null
@@ -100,31 +102,55 @@ function nthPercentile(lst, n) {
     return nonzero(le(lst, lim));
 }
 
-function flotPlot(data) {
-    progress.innerHTML = (script.filename?
-            '<div><b>File:</b> '+script.filename+'</div>':
-            '')+
-        '<div><small>'+navigator.userAgent+'</small></div>';
+function plotData(data) {
+    var progress = YAHOO.util.Dom.get('progress');
+    progress.innerHTML = '<tr><td colspan="3">'+navigator.userAgent+'</td></tr>'+
+        '<tr><th></th><th>Mean Average</th><th>Std. Deviation</th></tr>';
     
-    for(var testcase=0; testcase<testcases; testcase++) {
-        if (YAHOO.util.Dom.get('ignore-spikes').checked) {
-                data[testcase] = nthPercentile(data[testcase], 0.95);
-        }
-        var lst = map(function(x){return x[1];}, data[testcase]);
-        var mean = avg(lst);
-        var variance = stdev(lst, mean);
-        progress.innerHTML += [
-                              '<div><b>Testcase ',(testcase+1),': '+LABELS[testcase]+'</b></div>',
-                              '<div><b>Mean Average:</b> ',mean.toFixed(0),' msecs</div>',
-                              '<div><b>Std. Deviation:</b> ',variance.toFixed(1),' msecs</div>']
-                            .join('');
+    data = elaborateData(data);
+    for(var testcase=0; testcase<extendedTestcases; testcase++)
         data[testcase] = {
             color: COLORS[testcase],
             label: LABELS[testcase],
-            data: data[testcase]};
+            data: data[testcase]
+        };
+    flotPlot([data[PARSE], data[PARSE_AS_STRING]], 'parsing');
+    flotPlot([data[EVALUATE_PARSED], data[EVALUATE_PARSED_AS_STRING]], 'evaluation');
+    flotPlot([data[PARSE_AND_EVALUATE], data[PARSE_AS_STRING_AND_EVALUATE], data[SIMPLE]], 'whole');
+}
+
+function elaborateData(data) {
+    function subtractData(minuend, subtrahend) {
+        var difference = new Array(minuend.length);
+        for(var i=0; i<minuend.length; i++)
+            difference[i] = [i, minuend[i][1] - subtrahend[i][1]];
+        return difference;
     }
-    YAHOO.widget.Flot("flot", data, { lines:{show:true} });
-    YAHOO.util.Dom.get('browser-icon').src = 'img/icon-'+icon+'.png';
+    data[EVALUATE_PARSED] = subtractData(data[PARSE_AND_EVALUATE], data[PARSE]);
+    data[EVALUATE_PARSED_AS_STRING] = subtractData(data[PARSE_AS_STRING_AND_EVALUATE], data[PARSE_AS_STRING]);
+    return data;
+}
+
+function flotPlot(data, target) {
+    var progress = YAHOO.util.Dom.get('progress');
+    
+    for(var testcase=0; testcase<data.length; testcase++) {
+        if (YAHOO.util.Dom.get('ignore-spikes').checked) {
+                data[testcase].data = nthPercentile(data[testcase].data, 0.95);
+        }
+        var lst = map(function(x){return x[1];}, data[testcase].data);
+        var mean = avg(lst);
+        var variance = stdev(lst, mean);
+        progress.innerHTML += [
+                              '<tr><th>',data[testcase].label,'</th>',
+                              '<td>',mean.toFixed(0),' msecs</td>',
+                              '<td>',variance.toFixed(1),' msecs</td></tr>']
+                            .join('');
+    }
+    YAHOO.widget.Flot('flot_'+target, data, { lines:{show:true} });
+    var img = YAHOO.util.Dom.get('browser-icon_'+target);
+    img.src = 'img/icon-'+icon+'.png';
+    img.style.visibility = 'visible';
 }
 
 function time() {
@@ -146,7 +172,7 @@ function recordTrial(msec) {
         if(testcase == 0) i += 1;
         loadFile2();
     } else {
-        flotPlot(data);
+        plotData(data);
     }
 }
 
@@ -175,7 +201,7 @@ function loadFile(i, testcase) {
         doc.write('<script>window.setTimeout(function(){top.loadFile('+i+', '+testcase+');});</script>');
         doc.close();
     } else {
-        flotPlot(data);
+        plotData(data);
     }
 }
 
@@ -241,7 +267,7 @@ function runTest() {
                 doc.close();
                 data[testcase][i] = [i, (new Date()).getTime() - start];
             }
-        flotPlot(data);
+        plotData(data);
     } else {
         window.setTimeout(function(){loadFile(0,0);}, 0);
     }

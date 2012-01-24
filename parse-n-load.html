@@ -13,11 +13,7 @@
       }
       body {
         text-align: center;
-      }
-      #flot {
-        height: 150px;
-        width: 600px;
-        margin-right: 50px;
+        width: 960px;
       }
       h2 {
         margin:0;
@@ -32,20 +28,27 @@
       #progress {
         width: 600px;
         font-size: smaller;
-        margin-bottom: 10px;
+        margin: 20px 40px;
+        text-align: left;
       }
-      body {
-        width: 800px;
+      .flot-container {
+        position: relative;
       }
-      #browser-icon {
+      .flot {
+        height: 150px;
+        width: 600px;
+        margin-right: 50px;
+      }
+      .browser-icon {
         position: absolute;
+        visibility: hidden;
         right: 30px;
         bottom: 0px;
       }
-
       #js {
         display:none;
       }
+      #percentile-info { font-size: small; }
     </style>
     <script src="js/yui2.js"></script>
     <script src="js/yui.flot.js"></script>
@@ -78,18 +81,28 @@
       <button id="run-test" onclick="runTest();"><b>Run Test</b></button>
     </fieldset>
 
-    <div id="progress">...</div>
+    <table id="progress"></table>
 
     <div>
     <div style="position:relative;display:inline-block;">
-      <div id="flot"></div>
-      <img src="" id="browser-icon" />
+      <div class="flot-container">
+          <div id="flot_parsing" class="flot"></div>
+          <img src="" id="browser-icon_parsing" class="browser-icon" />
+      </div>
+      <div class="flot-container">
+          <div id="flot_evaluation" class="flot"></div>
+          <img src="" id="browser-icon_evaluation" class="browser-icon" />
+      </div>
+      <div class="flot-container">
+          <div id="flot_whole" class="flot"></div>
+          <img src="" id="browser-icon_whole" class="browser-icon" />
+      </div>
     </div>
     </div>
 
     <iframe name="js" src="blank.html" id="js" ></iframe>
 
-    <p><b>Why 95th Percentile?</b> If you uncheck that box you'll probably see tall, regular spikes that dwarf the rest of the measurements. These are caused by the browser pausing to do garbage collection. It's good to remember GC halts but they can get in the way of informative graphs.</p>
+    <p id="percentile-info"><b>Why 95th Percentile?</b> If you uncheck that box you'll probably see tall, regular spikes that dwarf the rest of the measurements. These are caused by the browser pausing to do garbage collection. It's good to remember GC halts but they can get in the way of informative graphs.</p>
   </body>
 
 </html>
