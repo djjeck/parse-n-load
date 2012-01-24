@@ -15,9 +15,7 @@ function init() {
     window.jsframe = YAHOO.util.Dom.get('js');
     window.doc = YAHOO.util.Dom.get('js').contentWindow.document;
     window.win = YAHOO.util.Dom.get('js').contentWindow;
-    window.script = {
-         code: null
-    };
+    window.script = [];
     window.runs = 3;
     window.i = 0;
     window.runnable = true;
@@ -162,7 +160,7 @@ function loadFile(i, testcase) {
     if (i<runs) {
         doc.close();
         doc.write('<script>var start = (new Date()).getTime();</script>');
-        doc.write('<script id="test">'+makeCodeFor(script.code, testcase)+'</script>');
+        doc.write('<script id="test">'+script[testcase]+'</script>');
         doc.write('<script>top.data['+testcase+']['+i+'] = ['+i+', (new Date()).getTime() - start];</script>');
         doc.write('<script>var e=document.getElementById("test"); e.parentNode.removeChild(e);</script>');
         testcase = (testcase+1)%testcases;
@@ -174,25 +172,20 @@ function loadFile(i, testcase) {
     }
 }
 
-function makeCodeFor(code, testcase) {
-    //XXX code string should be created before the timer starts
-    //TODO does it make any difference if the code is evaluated only once at the beginning of the test?
+function makeCodeVersions(code) {
     function escape(code) {
         return code.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, "'+\n'");
     }
     
-    switch(testcase) {
-        case SIMPLE:
-            return code;
-        case PARSE:
-            return 'function parse() { '+code+' }';
-        case PARSE_AS_STRING:
-            return 'function parse_as_string() { eval(\''+escape(code)+'\'); }';
-        case PARSE_AND_EVALUATE:
-            return 'function parse() { '+code+' } parse();';
-        case PARSE_AS_STRING_AND_EVALUATE:
-            return 'function parse_as_string() { eval(\''+escape(code)+'\'); } parse_as_string();';
-    }
+    var versions = [];
+    
+    versions[SIMPLE] = code;
+    versions[PARSE] = 'function parse() { '+code+' }';
+    versions[PARSE_AS_STRING] = 'function parse_as_string() { eval(\''+escape(code)+'\'); }';
+    versions[PARSE_AND_EVALUATE] = versions[PARSE] + ' parse();';
+    versions[PARSE_AS_STRING_AND_EVALUATE] = versions[PARSE_AS_STRING]+' parse_as_string();';
+
+    return versions;
 }
 
 // browsecap crap.
@@ -204,8 +197,9 @@ var blocking = (match('Safari') && !match('Chrome') && match('Version/4')) || ma
 function runInit() {
     runs = parseInt(YAHOO.util.Dom.get('num-runs').value||'3');
     data = new Array(testcases);
-    for(var i=0;i<testcases; i++) data[i] = new Array(runs);
-    script.code = YAHOO.util.Dom.get('js-code').value;
+    for(var i=0;i<testcases; i++)
+        data[i] = new Array(runs);
+    script = makeCodeVersions(YAHOO.util.Dom.get('js-code').value);
 }
 
 
@@ -221,7 +215,7 @@ function runTest() {
             for (var testcase=0; testcase<testcases; testcase++) {
                 doc.open();
                 var start = time();
-                doc.write('<script id="test">'+makeCodeFor(script.code, testcase)+'</script>');
+                doc.write('<script id="test">'+script[testcase]+'</script>');
                 doc.write('<script>var e=document.getElementById("test"); e.parentNode.removeChild(e);</script>');
                 doc.close();
                 data[testcase][i] = [i, (new Date()).getTime() - start];
