@@ -11,7 +11,10 @@ function init() {
     window.doc = YAHOO.util.Dom.get('js').contentWindow.document;
     window.win = YAHOO.util.Dom.get('js').contentWindow;
     window.progress = YAHOO.util.Dom.get('progress');
-    window.filename = null;
+    window.script = {
+         filename: null,
+         code: null
+    };
     window.runs = 3;
     window.i = 0;
     window.runnable = true;
@@ -95,7 +98,8 @@ function flotPlot(data) {
     var lst = map(function(x){return x[1];}, data);
     var mean = avg(lst);
     var variance = stdev(lst, mean);
-    progress.innerHTML = ['<div><b>File:</b> ',filename,'</div>',
+    progress.innerHTML = [
+                          script.filename?'<div><b>File:</b> '+script.filename+'</div>':'',
                           '<div><b>Mean Average:</b> ',mean.toFixed(0),' msecs</div>',
                           '<div><b>Std. Deviation:</b> ',variance.toFixed(1),' msecs</div>',
                           '<div><small>',navigator.userAgent,'</small></div>']
@@ -134,7 +138,7 @@ function loadFile2() {
     delel(jsframe);
     jsframe = document.createElement('iframe');
     jsframe.is = 'js';
-    jsframe.src = filename + '.html';
+    jsframe.src = script.filename + '.html';
     document.body.appendChild(jsframe);
 }
 
@@ -143,7 +147,11 @@ function loadFile(i) {
     if (i<runs) {
         doc.close();
         doc.write('<script>var start = (new Date()).getTime();</script>');
-        doc.write('<script id="test" src="'+filename+'"></script>');
+        doc.write('<script id="test" '+
+        (script.filename?
+            'src="'+script.filename+'">':
+            '>'+script.code)+
+        '</script>');
         doc.write('<script>top.data['+i+'] = ['+i+', (new Date()).getTime() - start];</script>');
         doc.write('<script>var e=document.getElementById("test"); e.parentNode.removeChild(e);</script>');
         doc.write('<script>window.setTimeout(function(){top.loadFile('+(i+1)+');}, 0);</script>');
@@ -162,7 +170,8 @@ var blocking = (match('Safari') && !match('Chrome') && match('Version/4')) || ma
 function runInit() {
     runs = parseInt(YAHOO.util.Dom.get('num-runs').value||'3');
     data = new Array(runs);
-    filename = YAHOO.util.Dom.get('js-file').value;
+    script.filename = YAHOO.util.Dom.get('js-file').value;
+    script.code = YAHOO.util.Dom.get('js-code').value;
 }
 
 
@@ -182,7 +191,11 @@ function runTest() {
         for (var i=0; i<runs; i++) {
             doc.open();
             var start = time();
-            doc.write('<script id="test" src="'+filename+'.js"></script>');
+            doc.write('<script id="test" '+
+            (script.filename?
+                'src="'+script.filename+'">':
+                '>'+script.code)+
+            '</script>');
             doc.write('<script>var e=document.getElementById("test"); e.parentNode.removeChild(e);</script>');
             doc.close();
             data[i] = [i, (new Date()).getTime() - start];

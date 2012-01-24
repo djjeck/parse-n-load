@@ -6,7 +6,14 @@
   <head>
     <title>Parse-n-Load Javascript Test Harness</title>
     <style>
-      * { font-family: "Helvetica Neue", "Helvetica", "Arial", "Lucida Grande", "sans"; }
+      * {
+        margin: 0px;
+        padding: 0px;
+        font-family: "Helvetica Neue", "Helvetica", "Arial", "Lucida Grande", "sans";
+      }
+      body {
+        text-align: center;
+      }
       #flot {
         height: 150px;
         width: 600px;
@@ -19,6 +26,8 @@
       }
       fieldset {
         border: none;
+        padding: 20px;
+        background-color: #DDD;
       }
       #progress {
         width: 600px;
@@ -46,14 +55,16 @@
 
   <body>
     <h2>Parse-n-Load Javascript Test Harness</h2>
-    <p>
-      Choose a Javascript file, choose the number of test runs, then click "Run Test".
-    </p>
-
     <fieldset>
-      File:
+      Choose file path (relative or absolute)
       <input type="text" id="js-file" />
-      &nbsp;&nbsp;
+      or
+      <br />
+      paste your code here
+      <br />
+      <textarea id="js-code" cols="60" rows="10"></textarea>
+      <br />
+      <br />
       Runs: <input type="text" size="4" maxlength="4" id="num-runs" value="1000" />
       &nbsp;&nbsp;
       <small><input type="checkbox" id="ignore-spikes" checked="checked" /> 95th percentile</small>
