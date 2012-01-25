@@ -155,8 +155,19 @@ function delel(el) {
     el.parentNode.removeChild(el);
 }
 
+function showPercentage(run, testcase) {
+    if(run<runs) {
+        YAHOO.util.Dom.get('run-test').style.display = 'none';
+        YAHOO.util.Dom.get('percentage').innerHTML = Math.floor(100*(run+(testcase/testcases))/runs)+'%';
+    } else {
+        YAHOO.util.Dom.get('run-test').style.display = '';
+        YAHOO.util.Dom.get('percentage').innerHTML = '';
+    }
+}
+
 //for non-blocking browsers. careful not to blow the stack.
 function loadFile(i, testcase) {
+    showPercentage(i, testcase);
     if (i<runs) {
         doc.close();
         doc.write('<script>var start = (new Date()).getTime();</script>');
@@ -213,6 +224,7 @@ function runTest() {
     if (blocking) {
         for (var i=0; i<runs; i++) 
             for (var testcase=0; testcase<testcases; testcase++) {
+                showPercentage(i, testcase);
                 doc.open();
                 var start = time();
                 doc.write('<script id="test">'+script[testcase]+'</script>');
