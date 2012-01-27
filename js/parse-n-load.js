@@ -11,16 +11,15 @@ var LABELS = ['Simple', 'Parse only', 'Parse as string', 'Parse, then evaluate',
 var COLORS = ['#DD1111','#11DD11','#1111DD','#11DD11','#1111DD','#11DD11','#1111DD'];
 
 function init() {
-    window.data = [[],[],[],[],[]];
-    window.jsframe = YAHOO.util.Dom.get('js');
-    window.doc = YAHOO.util.Dom.get('js').contentWindow.document;
-    window.win = YAHOO.util.Dom.get('js').contentWindow;
-    window.script = [];
-    window.runs = 3;
-    window.i = 0;
-    window.runnable = true;
+	data = [];
+    jsframe = YAHOO.util.Dom.get('js');
+    win = jsframe.contentWindow;
+    doc = win.document;
+    script = [];
+    runs = 3;
+    i = 0;
 
-    window.icon = '';
+    icon = '';
     if (match('Safari')) {
         icon = 'safari';
         if (match('Chrome')) {
@@ -93,8 +92,8 @@ function nthPercentile(lst, n) {
 }
 
 function plotData(data) {
-    var progress = YAHOO.util.Dom.get('progress');
-    progress.innerHTML = '<tr><td colspan="3">'+navigator.userAgent+'</td></tr>'+
+    var results = YAHOO.util.Dom.get('results');
+    results.innerHTML = '<tr><td colspan="3">'+navigator.userAgent+'</td></tr>'+
         '<tr><th></th><th>Mean Average</th><th>Std. Deviation</th></tr>';
     
     data = elaborateData(data);
@@ -122,7 +121,7 @@ function elaborateData(data) {
 }
 
 function flotPlot(data, target) {
-    var progress = YAHOO.util.Dom.get('progress');
+    var results = YAHOO.util.Dom.get('results');
     
     for(var testcase=0; testcase<data.length; testcase++) {
         if (YAHOO.util.Dom.get('ignore-spikes').checked) {
@@ -131,7 +130,7 @@ function flotPlot(data, target) {
         var lst = map(function(x){return x[1];}, data[testcase].data);
         var mean = avg(lst);
         var variance = stdev(lst, mean);
-        progress.innerHTML += [
+        results.innerHTML += [
                               '<tr><th>',data[testcase].label,'</th>',
                               '<td>',mean.toFixed(0),' msecs</td>',
                               '<td>',variance.toFixed(1),' msecs</td></tr>']
@@ -141,10 +140,6 @@ function flotPlot(data, target) {
     var img = YAHOO.util.Dom.get('browser-icon_'+target);
     img.src = 'img/icon-'+icon+'.png';
     img.style.visibility = 'visible';
-}
-
-function time() {
-    return (new Date()).getTime();
 }
 
 function match(s) {
@@ -170,13 +165,13 @@ function loadFile(i, testcase) {
     showPercentage(i, testcase);
     if (i<runs) {
         doc.close();
-        doc.write('<script>var start = (new Date()).getTime();</script>');
-        doc.write('<script id="test">'+script[testcase]+'</script>');
-        doc.write('<script>top.data['+testcase+']['+i+'] = ['+i+', (new Date()).getTime() - start];</script>');
+        doc.write('<script>var start = top.time();</script>');
+        doc.write('<script id="test">'+(script[testcase]+';'+i+'+'+testcase)+'</script>');
+        doc.write('<script>top.data['+testcase+']['+i+'] = ['+i+', top.time() - start];</script>');
         doc.write('<script>var e=document.getElementById("test"); e.parentNode.removeChild(e);</script>');
         testcase = (testcase+1)%testcases;
         if(testcase==0) i++;
-        doc.write('<script>window.setTimeout(function(){top.loadFile('+i+', '+testcase+');});</script>');
+        doc.write('<script>setTimeout(function(){top.loadFile('+i+', '+testcase+');});</script>');
         doc.close();
     } else {
         plotData(data);
@@ -206,6 +201,22 @@ var blocking = (match('Safari') && !match('Chrome') && match('Version/4')) || ma
 
 
 function runInit() {
+	var applet = YAHOO.util.Dom.get('use-nano').checked && document.getElementById('nanoTime');
+	time = applet ?
+		(function(ns) {
+			return function() {
+				try {
+					return ns.nanoTime() / 1e6;
+				} catch(e) {
+					ns = new applet.Packages.nano; // reinstantiate
+					return ns.nanoTime() / 1e6;
+				}
+			};
+		})(applet) :
+		function() {
+			return (new Date()).getTime();
+		};
+
     runs = parseInt(YAHOO.util.Dom.get('num-runs').value||'3');
     data = new Array(testcases);
     for(var i=0;i<testcases; i++)
@@ -220,24 +231,20 @@ function runTest() {
     // Safari 4 blocks when writing script tags. Firefox does not.
     // Chrome does not block, but the naive code path blows the
     // stack after just 20 iterations (ORLY? RLY.)
-    // hence the window.setTimeout(fn, 0);
+    // hence the setTimeout(fn, 0);
     if (blocking) {
         for (var i=0; i<runs; i++) 
             for (var testcase=0; testcase<testcases; testcase++) {
                 showPercentage(i, testcase);
                 doc.open();
                 var start = time();
-                doc.write('<script id="test">'+script[testcase]+'</script>');
+                doc.write('<script id="test">'+(script[testcase]+';'+i+'+'+testcase)+'</script>');
                 doc.write('<script>var e=document.getElementById("test"); e.parentNode.removeChild(e);</script>');
                 doc.close();
-                data[testcase][i] = [i, (new Date()).getTime() - start];
+                data[testcase][i] = [i, time() - start];
             }
         plotData(data);
     } else {
-        window.setTimeout(function(){loadFile(0,0);}, 0);
+        setTimeout(function(){loadFile(0,0);}, 0);
     }
-}
-
-function stopTest() {
-    runnable = false;
 }

@@ -30,7 +30,7 @@
         width: 75%;
         height: 250px;
       }
-      #progress {
+      #results {
         width: 600px;
         font-size: smaller;
         margin: 20px 40px;
@@ -71,12 +71,14 @@
       Runs: <input type="text" size="4" maxlength="4" id="num-runs" value="200" />
       &nbsp;&nbsp;
       <small><input type="checkbox" id="ignore-spikes" checked="checked" /> 95th percentile</small>
+      &nbsp;&nbsp;
+      <small><input type="checkbox" id="use-nano" /> use Java time</small>
       <br /><br />
       <button id="run-test" onclick="runTest();"><b>Run Test</b></button>
       <span id="percentage"></span>
     </fieldset>
 
-    <table id="progress"></table>
+    <table id="results"></table>
 
     <div>
     <div style="position:relative;display:inline-block;">
@@ -101,6 +103,9 @@
     <iframe name="js" src="blank.html" id="js" ></iframe>
 
     <p id="percentile-info"><b>Why 95th Percentile?</b> If you uncheck that box you'll probably see tall, regular spikes that dwarf the rest of the measurements. These are caused by the browser pausing to do garbage collection. It's good to remember GC halts but they can get in the way of informative graphs.</p>
+    
+    <applet id="nanoTime" code="nano" archive="nano.jar"></applet>
+    
   </body>
 
 </html>
