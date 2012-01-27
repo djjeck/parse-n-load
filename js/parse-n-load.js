@@ -128,12 +128,12 @@ function flotPlot(data, target) {
                 data[testcase].data = nthPercentile(data[testcase].data, 0.95);
         }
         var lst = map(function(x){return x[1];}, data[testcase].data);
-        var mean = avg(lst);
-        var variance = stdev(lst, mean);
+        var mean = avg(lst).toFixed(2);
+        var variance = stdev(lst, mean).toFixed(2);
         results.innerHTML += [
                               '<tr><th>',data[testcase].label,'</th>',
-                              '<td>',mean.toFixed(0),' msecs</td>',
-                              '<td>',variance.toFixed(1),' msecs</td></tr>']
+                              '<td>',mean,' msecs</td>',
+                              '<td>',variance,' msecs</td></tr>']
                             .join('');
     }
     YAHOO.widget.Flot('flot_'+target, data, { lines:{show:true} });
