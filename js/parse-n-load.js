@@ -94,6 +94,7 @@ function nthPercentile(lst, n) {
 function plotData(data) {
     var results = YAHOO.util.Dom.get('results');
     results.innerHTML = '<tr><td colspan="3">'+navigator.userAgent+'</td></tr>'+
+        '<tr><td colspan="3">Is blocking: '+blocking+'</td></tr>'+
         '<tr><th></th><th>Mean Average</th><th>Std. Deviation</th></tr>';
     
     data = elaborateData(data);
@@ -180,16 +181,16 @@ function loadFile(i, testcase) {
 
 function makeCodeVersions(code) {
     function escape(code) {
-        return code.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, "'+\n'");
+        return code.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/(\r\n|\r|\n)/g, "\\n'+\n'");
     }
     
     var versions = [];
     
     versions[SIMPLE] = code;
     versions[PARSE] = 'function parse() { '+code+' }';
-    versions[PARSE_AS_STRING] = 'function parse_as_string() { eval(\''+escape(code)+'\'); }';
-    versions[PARSE_AND_EVALUATE] = versions[PARSE] + ' parse();';
-    versions[PARSE_AS_STRING_AND_EVALUATE] = versions[PARSE_AS_STRING]+' parse_as_string();';
+    versions[PARSE_AS_STRING] = "function parse_as_string() { eval('"+escape(code)+"'); }";
+    versions[PARSE_AND_EVALUATE] = versions[PARSE] + '; parse();';
+    versions[PARSE_AS_STRING_AND_EVALUATE] = versions[PARSE_AS_STRING]+'; parse_as_string();';
 
     return versions;
 }
