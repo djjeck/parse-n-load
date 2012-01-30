@@ -10,7 +10,7 @@ var extendedTestcases = 7;
 var LABELS = ['Simple', 'Parse only', 'Parse as string', 'Parse, then evaluate', 'Parse and call eval()', 'Evaluate parsed', 'Call eval()'];
 var COLORS = ['#DD1111','#11DD11','#1111DD','#11DD11','#1111DD','#11DD11','#1111DD'];
 
-var BENCHMARKS = ['---', 'jquery-1.7.1.js', 'jquery-1.7.1.min.js', '---', 'jquery-1.7.1--partly_pruned.js', 'jquery-1.7.1--completely_pruned.js'];
+var BENCHMARKS = ['---', 'jquery-1.7.1.js', 'jquery-1.7.1.min.js', 'jquery-ui-1.7.2-min.js', 'scriptaculous-raw.js', 'scriptaculous-min.js', 'ymail.js', 'yui2-raw.js', 'yui2-min.js', 'yui3-raw.js', 'yui3-min.js', 'github.js', '---', 'jquery-1.7.1--partly_pruned.js', 'jquery-1.7.1--completely_pruned.js'];
 var benchmarks = {};
 var editingCustomBenchmark = true;
 
