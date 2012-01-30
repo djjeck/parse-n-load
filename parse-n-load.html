@@ -64,7 +64,12 @@
   <body>
     <h2>Parse-n-Load Javascript Test Harness</h2>
     <fieldset>
-      Paste your code here
+      Choose a default benchmark
+      <select id="choose-benchmark">
+          <option value="custom">Custom</option>
+      </select>
+      <br />
+      Or paste your code here
       <br />
       <textarea id="js-code"></textarea>
       <br /><br />
@@ -72,7 +77,7 @@
       &nbsp;&nbsp;
       <small><input type="checkbox" id="ignore-spikes" checked="checked" /> 95th percentile</small>
       &nbsp;&nbsp;
-      <small><input type="checkbox" id="use-nano" /> use Java time</small>
+      <small><input type="checkbox" id="use-nano" checked="checked" /> use Java time</small>
       <br /><br />
       <button id="run-test" onclick="runTest();"><b>Run Test</b></button>
       <span id="percentage"></span>

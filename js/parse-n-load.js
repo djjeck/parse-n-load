@@ -10,6 +10,10 @@ var extendedTestcases = 7;
 var LABELS = ['Simple', 'Parse only', 'Parse as string', 'Parse, then evaluate', 'Parse and call eval()', 'Evaluate parsed', 'Call eval()'];
 var COLORS = ['#DD1111','#11DD11','#1111DD','#11DD11','#1111DD','#11DD11','#1111DD'];
 
+var BENCHMARKS = ['---', 'jquery-1.7.1.js', 'jquery-1.7.1.min.js', '---', 'jquery-1.7.1--partly_pruned.js', 'jquery-1.7.1--completely_pruned.js'];
+var benchmarks = {};
+var editingCustomBenchmark = true;
+
 function init() {
 	data = [];
     jsframe = YAHOO.util.Dom.get('js');
@@ -32,6 +36,8 @@ function init() {
     } else if (match('MSIE')) {
         icon = 'ie';
     }
+    
+    populateBenchmarks();
 }
 window.onload = init;
 
@@ -248,4 +254,75 @@ function runTest() {
     } else {
         setTimeout(function(){loadFile(0,0);}, 0);
     }
+}
+
+
+
+function populateBenchmarks() {
+
+    // adapted from http://www.quirksmode.org/js/xmlhttp.html
+    var XMLHttpFactories = [
+            function() { return new XMLHttpRequest() },
+            function() { return new ActiveXObject("Msxml2.XMLHTTP") },
+            function() { return new ActiveXObject("Msxml3.XMLHTTP") },
+            function() { return new ActiveXObject("Microsoft.XMLHTTP") }
+    ];
+    var createXMLHTTPObject = function() {
+        for (var i=0; i<XMLHttpFactories.length; i++) {
+            try { return XMLHttpFactories[i](); }
+            catch(e) { continue; }
+        }
+        return false;
+    }
+    var sendRequest = function(url, callback) {
+        var req = createXMLHTTPObject();
+        if (!req)
+            return;
+        req.open('GET',url,true);
+        req.setRequestHeader('User-Agent','XMLHTTP/1.0');
+        req.onreadystatechange = function() {
+            if (req.readyState == 4)
+                if (req.status == 200 || req.status == 304)
+                    callback(req);
+        };
+        if (req.readyState == 4)
+            return;
+        req.send();
+    }
+    // end http://www.quirksmode.org/js/xmlhttp.html
+    
+    YAHOO.util.Dom.get('choose-benchmark').onchange = function() {
+        selectBenchmark(this.value);
+    }
+    
+    var select = YAHOO.util.Dom.get('choose-benchmark');
+    for(var i=0; i<BENCHMARKS.length; i++) {
+        var option = document.createElement('option');
+        option.value = option.innerHTML = BENCHMARKS[i];
+        option.disabled = 'disabled';
+        select.appendChild(option);
+        
+        sendRequest('test-files/'+BENCHMARKS[i], (function(id, option) {
+            return function(request) {
+                benchmarks[id] = request.responseText;
+                option.disabled = false;
+            };
+        })(BENCHMARKS[i], option));
+    }
+}
+
+function selectBenchmark(id) {
+    var codeArea = YAHOO.util.Dom.get('js-code');
+    if(id == 'custom') {
+        if(editingCustomBenchmark)
+            return;
+        codeArea.disabled = false;
+        editingCustomBenchmark = true;
+    } else {
+        if(editingCustomBenchmark)
+            benchmarks['custom'] = codeArea.value;
+        codeArea.disabled = 'disabled';
+        editingCustomBenchmark = false;
+    }
+    codeArea.value = benchmarks[id];
 }
