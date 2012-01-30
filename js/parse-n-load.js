@@ -158,9 +158,9 @@ function delel(el) {
 }
 
 function showPercentage(run, testcase) {
-    if(run<runs) {
+    if(run && run<runs) {
         YAHOO.util.Dom.get('run-test').style.display = 'none';
-        YAHOO.util.Dom.get('percentage').innerHTML = Math.floor(100*(run+(testcase/testcases))/runs)+'%';
+        YAHOO.util.Dom.get('percentage').innerHTML = Math.ceil(100*(run+(testcase/testcases))/runs)+'%';
     } else {
         YAHOO.util.Dom.get('run-test').style.display = '';
         YAHOO.util.Dom.get('percentage').innerHTML = '';
@@ -250,6 +250,7 @@ function runTest() {
                 doc.close();
                 data[testcase][i] = [i, time() - start];
             }
+        showPercentage();
         plotData(data);
     } else {
         setTimeout(function(){loadFile(0,0);}, 0);
