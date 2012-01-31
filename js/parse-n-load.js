@@ -10,7 +10,25 @@ var extendedTestcases = 7;
 var LABELS = ['Simple', 'Parse only', 'Parse as string', 'Parse, then evaluate', 'Parse and call eval()', 'Evaluate parsed', 'Call eval()'];
 var COLORS = ['#DD1111','#11DD11','#1111DD','#11DD11','#1111DD','#11DD11','#1111DD'];
 
-var BENCHMARKS = ['---', 'jquery-1.7.1.js', 'jquery-1.7.1.min.js', 'jquery-ui-1.7.2-min.js', 'scriptaculous-raw.js', 'scriptaculous-min.js', 'ymail.js', 'yui2-raw.js', 'yui2-min.js', 'yui3-raw.js', 'yui3-min.js', 'github.js', '---', 'jquery-1.7.1--partly_pruned.js', 'jquery-1.7.1--completely_pruned.js'];
+var BENCHMARKS = [
+    '---',
+        'jquery-1.7.1.js', 
+        'jquery-1.7.1.min.js', 
+        'jquery-ui-1.7.2-min.js', 
+        'scriptaculous-raw.js', 
+        'scriptaculous-min.js', 
+        'ymail.js', 
+        'yui2-raw.js', 
+        'yui2-min.js', 
+        'yui3-raw.js', 
+        'yui3-min.js', 
+        'github.js',
+    '---', 
+        'jquery-1.7.1.min.0.js',
+        'jquery-1.7.1.min.91.js',
+        'jquery-1.7.1.min.124.js',
+        'jquery-1.7.1.min.1.js' 
+    ];
 var benchmarks = {};
 var editingCustomBenchmark = true;
 
@@ -178,7 +196,7 @@ function loadFile(i, testcase) {
         doc.write('<script>var e=document.getElementById("test"); e.parentNode.removeChild(e);</script>');
         testcase = (testcase+1)%testcases;
         if(testcase==0) i++;
-        doc.write('<script>setTimeout(function(){top.loadFile('+i+', '+testcase+');});</script>');
+        doc.write('<script>setTimeout(function(){top.loadFile('+i+', '+testcase+');}, 1);</script>');
         doc.close();
     } else {
         plotData(data);
@@ -202,27 +220,27 @@ function makeCodeVersions(code) {
 }
 
 // browsecap crap.
-// blocking = (Safari 4 (but not Chrome)) or (Opera)
+// blocking = (Safari 4 (but not Chrome nor Android)) or (Opera)
 var nav = navigator.userAgent;
-var blocking = (match('Safari') && !match('Chrome') && match('Version/4')) || match('Opera');
+var blocking = (match('Safari') && !match('Chrome') && !match('Android') && match('Version/4')) || match('Opera');
 
 
 function runInit() {
-	var applet = YAHOO.util.Dom.get('use-nano').checked && document.getElementById('nanoTime');
-	time = applet ?
-		(function(ns) {
-			return function() {
-				try {
-					return ns.nanoTime() / 1e6;
-				} catch(e) {
-					ns = new applet.Packages.nano; // reinstantiate
-					return ns.nanoTime() / 1e6;
-				}
-			};
-		})(applet) :
-		function() {
-			return (new Date()).getTime();
-		};
+    var applet = YAHOO.util.Dom.get('use-nano').checked && document.getElementById('nanoTime');
+    time = applet ?
+        (function(ns) {
+                return function() {
+                        try {
+                                return ns.nanoTime() / 1e6;
+                        } catch(e) {
+                                ns = new applet.Packages.nano; // reinstantiate
+                                return ns.nanoTime() / 1e6;
+                        }
+                };
+        })(applet) :
+        function() {
+                return (new Date()).getTime();
+        };
 
     runs = parseInt(YAHOO.util.Dom.get('num-runs').value||'3');
     data = new Array(testcases);
@@ -253,7 +271,7 @@ function runTest() {
         showPercentage();
         plotData(data);
     } else {
-        setTimeout(function(){loadFile(0,0);}, 0);
+        setTimeout(function(){loadFile(0,0);}, 1);
     }
 }
 
