@@ -3,7 +3,7 @@ var PARSE = 1;
 var PARSE_AS_STRING = 2;
 var PARSE_AND_EVALUATE = 3;
 var PARSE_AS_STRING_AND_EVALUATE = 4;
-var testcases = 5;
+var testcases = 1;
 var EVALUATE_PARSED = 5;
 var EVALUATE_PARSED_AS_STRING = 6;
 var extendedTestcases = 7;
@@ -24,10 +24,10 @@ var BENCHMARKS = [
         'yui3-min.js', 
         'github.js',
     '---', 
-        'jquery-1.7.1.min.0.js',
-        'jquery-1.7.1.min.91.js',
-        'jquery-1.7.1.min.124.js',
-        'jquery-1.7.1.min.1.js' 
+        'thescript.used.replaced.js',
+        'thescript.unused.replaced.js',
+        'thescript.used.js',
+        'thescript.unused.js'
     ];
 var benchmarks = {};
 var editingCustomBenchmark = true;
@@ -121,16 +121,14 @@ function plotData(data) {
         '<tr><td colspan="3">Is blocking: '+blocking+'</td></tr>'+
         '<tr><th></th><th>Mean Average</th><th>Std. Deviation</th></tr>';
     
-    data = elaborateData(data);
+    //data = elaborateData(data);
     for(var testcase=0; testcase<extendedTestcases; testcase++)
         data[testcase] = {
             color: COLORS[testcase],
             label: LABELS[testcase],
             data: data[testcase]
         };
-    flotPlot([data[PARSE], data[PARSE_AS_STRING]], 'parsing');
-    flotPlot([data[EVALUATE_PARSED], data[EVALUATE_PARSED_AS_STRING]], 'evaluation');
-    flotPlot([data[PARSE_AND_EVALUATE], data[PARSE_AS_STRING_AND_EVALUATE], data[SIMPLE]], 'whole');
+    flotPlot([data[SIMPLE]], 'whole');
 }
 
 function elaborateData(data) {
