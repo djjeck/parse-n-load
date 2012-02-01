@@ -11,29 +11,61 @@ var LABELS = ['Simple', 'Parse only', 'Parse as string', 'Parse, then evaluate',
 var COLORS = ['#DD1111','#11DD11','#1111DD','#11DD11','#1111DD','#11DD11','#1111DD'];
 
 var BENCHMARKS = [
-    '---',
-        'jquery-1.7.1.js', 
-        'jquery-1.7.1.min.js', 
-        'jquery-ui-1.7.2-min.js', 
-        'scriptaculous-raw.js', 
-        'scriptaculous-min.js', 
-        'ymail.js', 
-        'yui2-raw.js', 
-        'yui2-min.js', 
-        'yui3-raw.js', 
-        'yui3-min.js', 
-        'github.js',
-    '---', 
-        'thescript.used.replaced.js',
-        'thescript.unused.replaced.js',
-        'thescript.used.js',
-        'thescript.unused.js'
-    ];
+    [
+        'jquery-1.7.1.js',
+        'jquery-1.7.1.min.js',
+        'jquery-ui-1.7.2-min.js'
+    ], [
+        'scriptaculous-raw.js',
+        'scriptaculous-min.js'
+    ], [
+        'ymail.js',
+        'yui2-raw.js',
+        'yui2-min.js',
+        'yui3-raw.js',
+        'yui3-min.js'
+    ], [
+        'github.js'
+    ], [
+        'jquery-1.7.1.min.0.js',
+        'jquery-1.7.1.min.91.js',
+        'jquery-1.7.1.min.124.js',
+        'jquery-1.7.1.min.1.js'
+    ]
+];
 var benchmarks = {};
-var editingCustomBenchmark = true;
+//var editingCustomBenchmark = true;
+
+function Pointer(tests, runs) {
+    var run = 0;
+        benchmark = 0,
+        dimension = 0;
+    
+    var advance = function() {
+        dimension++;
+        if(dimension >= dimensions.length) {
+            benchmark++;
+            dimension = 0;
+        }
+        if(benchmark >= benchmarks.length) {
+            benchmark = 0;
+            run++;
+        }
+    };
+    
+    this.hasNext = function() { return run < runs; }
+    
+    this.next = function() {
+        if(!this.hasNext())
+            return null;
+        var element = tests[benchmark][dimension];
+        advance();
+        return element;
+    };
+}
 
 function init() {
-	data = [];
+    data = [];
     jsframe = YAHOO.util.Dom.get('js');
     win = jsframe.contentWindow;
     doc = win.document;
@@ -239,7 +271,7 @@ function runInit() {
         function() {
                 return (new Date()).getTime();
         };
-
+    
     runs = parseInt(YAHOO.util.Dom.get('num-runs').value||'3');
     data = new Array(testcases);
     for(var i=0;i<testcases; i++)
@@ -312,23 +344,34 @@ function populateBenchmarks() {
         selectBenchmark(this.value);
     }
     
-    var select = YAHOO.util.Dom.get('choose-benchmark');
-    for(var i=0; i<BENCHMARKS.length; i++) {
-        var option = document.createElement('option');
-        option.value = option.innerHTML = BENCHMARKS[i];
-        option.disabled = 'disabled';
-        select.appendChild(option);
-        
-        sendRequest('test-files/'+BENCHMARKS[i], (function(id, option) {
-            return function(request) {
-                benchmarks[id] = request.responseText;
-                option.disabled = false;
-            };
-        })(BENCHMARKS[i], option));
+    var  benchmarks_elem = YAHOO.util.Dom.get('choose-benchmark');
+    for(var group=0; group<BENCHMARKS.length; group++) {
+        for(var i=0; i<BENCHMARKS[group].length; i++) {
+            var label = document.createElement('label');
+            var checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.name = 'benchmarks[]';
+            checkbox.value = BENCHMARKS[group][i];
+            checkbox.disabled = 'disabled';
+            label.appendChild(checkbox);
+            var span = document.createElement('span');
+            span.innerHTML = BENCHMARKS[group][i];
+            label.appendChild(span);
+            benchmarks_elem.appendChild(label);
+            
+            sendRequest('test-files/'+BENCHMARKS[group][i], (function(id, checkbox) {
+                return function(request) {
+                    benchmarks[id] = request.responseText;
+                    checkbox.disabled = false;
+                };
+            })(BENCHMARKS[group][i], checkbox));
+        }
+         benchmarks_elem.appendChild(document.createElement('br'));
     }
 }
 
 function selectBenchmark(id) {
+    /*
     var codeArea = YAHOO.util.Dom.get('js-code');
     if(id == 'custom') {
         if(editingCustomBenchmark)
@@ -342,4 +385,5 @@ function selectBenchmark(id) {
         editingCustomBenchmark = false;
     }
     codeArea.value = benchmarks[id];
+    */
 }

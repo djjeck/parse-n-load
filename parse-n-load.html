@@ -6,7 +6,7 @@
       BSD-style license.
     -->
   <head>
-    <title>Parse-n-Load Javascript Test Harness</title>
+    <title>Parse-n-Load Javascript {FORK}</title>
     <style>
       * {
         margin: 0px;
@@ -64,16 +64,24 @@
   </head>
 
   <body>
-    <h2>Parse-n-Load Javascript Test Harness</h2>
+    <h2>Parse-n-Load Javascript {FORK}</h2>
     <fieldset>
-      Choose a default benchmark
-      <select id="choose-benchmark">
-          <option value="custom">Custom</option>
-      </select>
+      <fieldset id="choose-benchmark">
+          <legend>Choose one or more benchmarks</legend>
+      </fieldset>
+<!--
       <br />
       Or paste your code here
       <br />
       <textarea id="js-code"></textarea>
+-->
+      <br />
+      <fieldset>
+          <legend>Choose dimensions</legend>
+          <label><input type="checkbox" name="dimensions[]" value="simple" checked="checked" /> Simple</label>
+          <label><input type="checkbox" name="dimensions[]" value="parse" /> Parse and evaluate</label>
+          <label><input type="checkbox" name="dimensions[]" value="eval" /> eval()</label>
+      </fieldset>
       <br /><br />
       Runs: <input type="text" size="4" maxlength="4" id="num-runs" value="200" />
       &nbsp;&nbsp;
