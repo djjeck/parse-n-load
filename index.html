@@ -1,0 +1,133 @@
+<html>
+  <!--
+      Copyright 2010 carlos@bueno.org
+      BSD-style license.
+      Copyright 2012 sarcidiacono@instart.co
+      BSD-style license.
+    -->
+  <head>
+    <title>Parse-n-Load Javascript {FORK}</title>
+    <style>
+      * {
+        margin: 0px;
+        padding: 0px;
+        font-family: "Helvetica Neue", "Helvetica", "Arial", "Lucida Grande", "sans";
+      }
+      body {
+        text-align: center;
+        width: 960px;
+      }
+      h2 {
+        margin:0;
+        font-weight: normal;
+        color: #900;
+      }
+      fieldset {
+        border: none;
+        padding: 20px;
+        background-color: #DDD;
+      }
+      #choose-benchmark {
+        text-align: left;
+      }
+      #choose-benchmark label {
+        display: inline-block;
+        width: 100px;
+        margin: 4px 20px;
+      }
+      #js-code {
+        font-size: 10px;
+        width: 75%;
+        height: 250px;
+      }
+      #results {
+        width: 600px;
+        font-size: smaller;
+        margin: 20px 40px;
+        text-align: left;
+      }
+      .flot-container {
+        position: relative;
+      }
+      .flot {
+        width: 600px;
+        margin-right: 50px;
+      }
+      .browser-icon {
+        position: absolute;
+        visibility: hidden;
+        right: 30px;
+        bottom: 0px;
+      }
+      #js {
+        display:none;
+      }
+      #percentile-info { font-size: small; }
+    </style>
+    <script src="js/yui2.js"></script>
+    <script src="js/yui.flot.js"></script>
+    <!--[if IE]><script src="js/excanvas.min.js"></script><![endif]-->
+    <script src="js/parse-n-load.js"></script>
+  </head>
+
+  <body>
+    <h2>Parse-n-Load Javascript {FORK}</h2>
+    <fieldset>
+      <fieldset id="choose-benchmark">
+          <legend>Choose one or more benchmarks</legend>
+      </fieldset>
+<!--
+      <br />
+      Or paste your code here
+      <br />
+      <textarea id="js-code"></textarea>
+-->
+      <br />
+      <fieldset>
+          <legend>Choose dimensions</legend>
+          <label><input type="checkbox" name="dimensions[]" value="simple" id="checkbox_simple" checked="checked" /> Simple</label>
+          <label><input type="checkbox" name="dimensions[]" value="parse" id="checkbox_parse" /> Parse and evaluate</label>
+          <label><input type="checkbox" name="dimensions[]" value="eval" id="checkbox_eval" /> eval()</label>
+      </fieldset>
+      <br /><br />
+      Runs: <input type="text" size="4" maxlength="4" id="num-runs" value="200" />
+      &nbsp;&nbsp;
+      <small><input type="checkbox" id="ignore-spikes" checked="checked" /> 95th percentile</small>
+      &nbsp;&nbsp;
+      <small><input type="checkbox" id="use-nano" checked="checked" /> use Java time</small>
+      <br /><br />
+      <button id="run-test" onclick="runTest();"><b>Run Test</b></button>
+      <span id="percentage"></span>
+    </fieldset>
+
+    <table id="results"></table>
+
+    <div>
+    <div style="position:relative;display:inline-block;">
+      <div id="flot-container_parsing" class="flot-container">
+          <h4 class="title">Parsing</h4>
+          <div id="flot_parsing" class="flot"></div>
+          <img src="" id="browser-icon_parsing" class="browser-icon" />
+      </div>
+      <div id="flot-container_evaluation" class="flot-container">
+          <h4 class="title">Evaluation</h4>
+          <div id="flot_evaluation" class="flot"></div>
+          <img src="" id="browser-icon_evaluation" class="browser-icon" />
+      </div>
+      <div id="flot-container_whole" class="flot-container">
+          <h4 class="title">Overall</h4>
+          <div id="flot_whole" class="flot"></div>
+          <img src="" id="browser-icon_whole" class="browser-icon" />
+      </div>
+    </div>
+    </div>
+
+    <iframe name="js" src="blank.html" id="js" ></iframe>
+
+    <p id="percentile-info"><b>Why 95th Percentile?</b> If you uncheck that box you'll probably see tall, regular spikes that dwarf the rest of the measurements. These are caused by the browser pausing to do garbage collection. It's good to remember GC halts but they can get in the way of informative graphs.</p>
+    
+    <applet id="nanoTime" code="nano" archive="nano.jar"></applet>
+    
+  </body>
+
+</html>

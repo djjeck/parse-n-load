@@ -428,7 +428,7 @@ function populateBenchmarks() {
         
         parseNLoad.checkboxes[BENCHMARKS[i]] = checkbox;
         
-        sendRequest('test-files/'+BENCHMARKS[i], (function(id, checkbox) {
+        sendRequest('test-data/'+BENCHMARKS[i], (function(id, checkbox) {
             return function(request) {
                 parseNLoad.benchmarks[id] = request.responseText;
                 checkbox.disabled = false;
