@@ -8,63 +8,79 @@ var EVALUATE_PARSED = 5;
 var EVALUATE_PARSED_AS_STRING = 6;
 var extendedTestcases = 7;
 var LABELS = ['Simple', 'Parse only', 'Parse as string', 'Parse, then evaluate', 'Parse and call eval()', 'Evaluate parsed', 'Call eval()'];
-var COLORS = ['#DD1111','#11DD11','#1111DD','#11DD11','#1111DD','#11DD11','#1111DD'];
 
 var BENCHMARKS = [
-    [
         'jquery-1.7.1.js',
         'jquery-1.7.1.min.js',
-        'jquery-ui-1.7.2-min.js'
-    ], [
+        'jquery-ui-1.7.2-min.js',
         'scriptaculous-raw.js',
-        'scriptaculous-min.js'
-    ], [
+        'scriptaculous-min.js',
         'ymail.js',
         'yui2-raw.js',
         'yui2-min.js',
         'yui3-raw.js',
-        'yui3-min.js'
-    ], [
-        'github.js'
-    ], [
+        'yui3-min.js',
+        'github.js',
         'jquery-1.7.1.min.0.js',
         'jquery-1.7.1.min.91.js',
         'jquery-1.7.1.min.124.js',
         'jquery-1.7.1.min.1.js'
-    ]
-];
-var benchmarks = {};
+    ];
 //var editingCustomBenchmark = true;
 
 function Pointer(tests, runs) {
     var run = 0;
-        benchmark = 0,
-        dimension = 0;
+        benchmark = 0;
+    var current = null,
+        currentRun = 0;
     
     var advance = function() {
-        dimension++;
-        if(dimension >= dimensions.length) {
-            benchmark++;
-            dimension = 0;
-        }
-        if(benchmark >= benchmarks.length) {
+        current = tests[benchmark];
+        currentRun = run;
+        benchmark++;
+        if(benchmark >= tests.length) {
             benchmark = 0;
             run++;
         }
     };
     
-    this.hasNext = function() { return run < runs; }
+    this.getRun = function() { return currentRun; };
+    
+    this.getPercentage = function() { return Math.ceil((run + benchmark / tests.length) * 100 / runs); };
+    
+    this.hasNext = function() { return run < runs; };
     
     this.next = function() {
         if(!this.hasNext())
             return null;
-        var element = tests[benchmark][dimension];
         advance();
-        return element;
+        return current;
     };
+    this.current = function() {
+        return current;
+    }
 }
 
 function init() {
+    window.parseNLoad = {
+        benchmarks: {},
+        test: {},
+        checkboxes: {},
+        makeColor: (function() {
+            var COLORS = [[255,0,0],[0,255,0],[0,0,255],[255,255,0],[0,255,255],[255,0,255],[192,192,192]];
+            var BRIGHTNESS = [1, .7, .4, .7, .4, .7, .4];
+            var colorIndex = 0;
+            var colorCache = {};
+            
+            return function(script, testcase) {
+                colorCache[script] = colorCache[script] || COLORS[colorIndex++%COLORS.length];
+                var color = new Array(3);
+                for(var i=0;i<3;i++)
+                    color[i] = Math.floor(colorCache[script][i] * BRIGHTNESS[testcase]);
+                return 'rgb('+color.join(',')+')';
+            }
+        })()
+    };
     data = [];
     jsframe = YAHOO.util.Dom.get('js');
     win = jsframe.contentWindow;
@@ -147,31 +163,50 @@ function nthPercentile(lst, n) {
     return nonzero(le(lst, lim));
 }
 
-function plotData(data) {
+function plotData() {
     var results = YAHOO.util.Dom.get('results');
     results.innerHTML = '<tr><td colspan="3">'+navigator.userAgent+'</td></tr>'+
         '<tr><td colspan="3">Is blocking: '+blocking+'</td></tr>'+
         '<tr><th></th><th>Mean Average</th><th>Std. Deviation</th></tr>';
     
-    //data = elaborateData(data);
-    for(var testcase=0; testcase<extendedTestcases; testcase++)
-        data[testcase] = {
-            color: COLORS[testcase],
-            label: LABELS[testcase],
-            data: data[testcase]
-        };
-    flotPlot([data[SIMPLE]], 'whole');
+    var data = parseNLoad.test;
+    for(var script in data) {
+        data[script].data = elaborateData(data[script].data);
+        for(var testcase=0; testcase<extendedTestcases; testcase++)
+            data[script].data[testcase] = {
+                color: parseNLoad.makeColor(script, testcase),
+                label: script+' '+LABELS[testcase],
+                data: data[script].data[testcase]
+            };
+    }
+    
+    var plotIfAny = function(id, var_data) {
+        var plot = [];
+        for(var i=1;i<arguments.length;i++)
+            for(var script in data)
+                if(data[script].data[arguments[i]].data instanceof Array)
+                    plot.push(data[script].data[arguments[i]]);
+        if(plot.length > 0)
+            flotPlot(plot, id);
+    }
+    
+    plotIfAny('parsing', PARSE, PARSE_AS_STRING);
+    plotIfAny('evaluation', EVALUATE_PARSED, EVALUATE_PARSED_AS_STRING);
+    plotIfAny('whole', SIMPLE, PARSE_AND_EVALUATE, PARSE_AS_STRING_AND_EVALUATE);
 }
 
 function elaborateData(data) {
-    function subtractData(minuend, subtrahend) {
+    var subtractData = function(minuend, subtrahend) {
         var difference = new Array(minuend.length);
         for(var i=0; i<minuend.length; i++)
             difference[i] = [i, minuend[i][1] - subtrahend[i][1]];
         return difference;
-    }
-    data[EVALUATE_PARSED] = subtractData(data[PARSE_AND_EVALUATE], data[PARSE]);
-    data[EVALUATE_PARSED_AS_STRING] = subtractData(data[PARSE_AS_STRING_AND_EVALUATE], data[PARSE_AS_STRING]);
+    };
+    
+    if(data[PARSE_AND_EVALUATE] instanceof Array && data[PARSE] instanceof Array)
+        data[EVALUATE_PARSED] = subtractData(data[PARSE_AND_EVALUATE], data[PARSE]);
+    if(data[PARSE_AS_STRING_AND_EVALUATE] instanceof Array && data[PARSE_AS_STRING] instanceof Array)
+        data[EVALUATE_PARSED_AS_STRING] = subtractData(data[PARSE_AS_STRING_AND_EVALUATE], data[PARSE_AS_STRING]);
     return data;
 }
 
@@ -180,17 +215,18 @@ function flotPlot(data, target) {
     
     for(var testcase=0; testcase<data.length; testcase++) {
         if (YAHOO.util.Dom.get('ignore-spikes').checked) {
-                data[testcase].data = nthPercentile(data[testcase].data, 0.95);
+            data[testcase].data = nthPercentile(data[testcase].data, 0.95);
         }
         var lst = map(function(x){return x[1];}, data[testcase].data);
         var mean = avg(lst).toFixed(2);
         var variance = stdev(lst, mean).toFixed(2);
         results.innerHTML += [
-                              '<tr><th>',data[testcase].label,'</th>',
-                              '<td>',mean,' msecs</td>',
-                              '<td>',variance,' msecs</td></tr>']
-                            .join('');
+              '<tr><th>',data[testcase].label,'</th>',
+              '<td>',mean,' msecs</td>',
+              '<td>',variance,' msecs</td></tr>']
+            .join('');
     }
+    YAHOO.util.Dom.get('flot_'+target).style.height = '150px';
     YAHOO.widget.Flot('flot_'+target, data, { lines:{show:true} });
     var img = YAHOO.util.Dom.get('browser-icon_'+target);
     img.src = 'img/icon-'+icon+'.png';
@@ -205,10 +241,10 @@ function delel(el) {
     el.parentNode.removeChild(el);
 }
 
-function showPercentage(run, testcase) {
-    if(run && run<runs) {
+function showPercentage(value) {
+    if(value) {
         YAHOO.util.Dom.get('run-test').style.display = 'none';
-        YAHOO.util.Dom.get('percentage').innerHTML = Math.ceil(100*(run+(testcase/testcases))/runs)+'%';
+        YAHOO.util.Dom.get('percentage').innerHTML = value+'%';
     } else {
         YAHOO.util.Dom.get('run-test').style.display = '';
         YAHOO.util.Dom.get('percentage').innerHTML = '';
@@ -216,20 +252,22 @@ function showPercentage(run, testcase) {
 }
 
 //for non-blocking browsers. careful not to blow the stack.
-function loadFile(i, testcase) {
-    showPercentage(i, testcase);
-    if (i<runs) {
+function loadFile() {
+    if (parseNLoad.pointer.hasNext()) {
+        var test = parseNLoad.pointer.next();
+        showPercentage(parseNLoad.pointer.getPercentage());
         doc.close();
+        var rand = Math.random();
         doc.write('<script>var start = top.time();</script>');
-        doc.write('<script id="test">'+(script[testcase]+';'+i+'+'+testcase)+'</script>');
-        doc.write('<script>top.data['+testcase+']['+i+'] = ['+i+', top.time() - start];</script>');
+        doc.write('<script id="test">'+test.script+';'+rand+';</script>');
+        var i = parseNLoad.pointer.getRun();
+        doc.write('<script>top.parseNLoad.pointer.current().data['+i+'] = ['+i+', top.time() - start];</script>');
         doc.write('<script>var e=document.getElementById("test"); e.parentNode.removeChild(e);</script>');
-        testcase = (testcase+1)%testcases;
-        if(testcase==0) i++;
-        doc.write('<script>setTimeout(function(){top.loadFile('+i+', '+testcase+');}, 1);</script>');
+        doc.write('<script>setTimeout(function(){top.loadFile();}, 1);</script>');
         doc.close();
     } else {
-        plotData(data);
+        showPercentage();
+        plotData();
     }
 }
 
@@ -238,7 +276,7 @@ function makeCodeVersions(code) {
         return code.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/(\r\n|\r|\n)/g, "\\n'+\n'");
     }
     
-    var versions = [];
+    var versions = {};
     
     versions[SIMPLE] = code;
     versions[PARSE] = 'function parse() { '+code+' }';
@@ -255,53 +293,83 @@ var nav = navigator.userAgent;
 var blocking = (match('Safari') && !match('Chrome') && !match('Android') && match('Version/4')) || match('Opera');
 
 
-function runInit() {
+function runTest() {
     var applet = YAHOO.util.Dom.get('use-nano').checked && document.getElementById('nanoTime');
     time = applet ?
         (function(ns) {
-                return function() {
-                        try {
-                                return ns.nanoTime() / 1e6;
-                        } catch(e) {
-                                ns = new applet.Packages.nano; // reinstantiate
-                                return ns.nanoTime() / 1e6;
-                        }
-                };
+            return function() {
+                try {
+                        return ns.nanoTime() / 1e6;
+                } catch(e) {
+                        ns = new applet.Packages.nano; // reinstantiate
+                        return ns.nanoTime() / 1e6;
+                }
+            };
         })(applet) :
         function() {
-                return (new Date()).getTime();
+            return (new Date()).getTime();
         };
     
     runs = parseInt(YAHOO.util.Dom.get('num-runs').value||'3');
-    data = new Array(testcases);
-    for(var i=0;i<testcases; i++)
-        data[i] = new Array(runs);
-    script = makeCodeVersions(YAHOO.util.Dom.get('js-code').value);
+    
+    var use_simple = YAHOO.util.Dom.get('checkbox_simple').checked;
+    var use_parse = YAHOO.util.Dom.get('checkbox_parse').checked;
+    var use_eval = YAHOO.util.Dom.get('checkbox_eval').checked;
+    
+    var script_ids = getCheckedBenchmarks();
+    var benchmarks = [];
+    for(var i=0; i<script_ids.length; i++) {
+        var script = parseNLoad.test[script_ids[i]] = {
+            id: script_ids[i],
+            code: makeCodeVersions(parseNLoad.benchmarks[script_ids[i]]),
+            data: new Array(testcases)
+        }
+        var addBenchmark = function(id) {
+            script.data[id] = new Array(runs);
+            benchmarks.push({ script: script.code[id], data: script.data[id] });
+        }
+        
+        if(use_simple) {
+            addBenchmark(SIMPLE);
+        }
+        if(use_parse) {
+            addBenchmark(PARSE);
+            addBenchmark(PARSE_AND_EVALUATE);
+        }
+        if(use_eval) {
+            addBenchmark(PARSE_AS_STRING);
+            addBenchmark(PARSE_AS_STRING_AND_EVALUATE);
+        }
+    }
+    
+    parseNLoad.pointer = new Pointer(benchmarks, runs);
+
+    runTestCases();
 }
 
 
-function runTest() {
-    runInit();
-
+function runTestCases() {
     // Safari 4 blocks when writing script tags. Firefox does not.
     // Chrome does not block, but the naive code path blows the
     // stack after just 20 iterations (ORLY? RLY.)
     // hence the setTimeout(fn, 0);
     if (blocking) {
-        for (var i=0; i<runs; i++) 
-            for (var testcase=0; testcase<testcases; testcase++) {
-                showPercentage(i, testcase);
-                doc.open();
-                var start = time();
-                doc.write('<script id="test">'+(script[testcase]+';'+i+'+'+testcase)+'</script>');
-                doc.write('<script>var e=document.getElementById("test"); e.parentNode.removeChild(e);</script>');
-                doc.close();
-                data[testcase][i] = [i, time() - start];
-            }
+        while(parseNLoad.pointer.hasNext()) {
+            showPercentage(parseNLoad.pointer.getPercentage());
+            var test = parseNLoad.pointer.next();
+            doc.open();
+            var rand = Math.random();
+            var start = time();
+            doc.write('<script id="test">'+test.script+';'+rand+';</script>');
+            doc.write('<script>var e=document.getElementById("test"); e.parentNode.removeChild(e);</script>');
+            doc.close();
+            var i = parseNLoad.pointer.getRun();
+            test.data[i] = [i, time() - start];
+        }
         showPercentage();
-        plotData(data);
+        plotData();
     } else {
-        setTimeout(function(){loadFile(0,0);}, 1);
+        setTimeout(function(){loadFile();}, 1);
     }
 }
 
@@ -345,29 +413,36 @@ function populateBenchmarks() {
     }
     
     var  benchmarks_elem = YAHOO.util.Dom.get('choose-benchmark');
-    for(var group=0; group<BENCHMARKS.length; group++) {
-        for(var i=0; i<BENCHMARKS[group].length; i++) {
-            var label = document.createElement('label');
-            var checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.name = 'benchmarks[]';
-            checkbox.value = BENCHMARKS[group][i];
-            checkbox.disabled = 'disabled';
-            label.appendChild(checkbox);
-            var span = document.createElement('span');
-            span.innerHTML = BENCHMARKS[group][i];
-            label.appendChild(span);
-            benchmarks_elem.appendChild(label);
-            
-            sendRequest('test-files/'+BENCHMARKS[group][i], (function(id, checkbox) {
-                return function(request) {
-                    benchmarks[id] = request.responseText;
-                    checkbox.disabled = false;
-                };
-            })(BENCHMARKS[group][i], checkbox));
-        }
-         benchmarks_elem.appendChild(document.createElement('br'));
+    for(var i=0; i<BENCHMARKS.length; i++) {
+        var label = document.createElement('label');
+        var checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.name = 'benchmarks[]';
+        checkbox.value = BENCHMARKS[i];
+        checkbox.disabled = 'disabled';
+        label.appendChild(checkbox);
+        var span = document.createElement('span');
+        span.innerHTML = BENCHMARKS[i];
+        label.appendChild(span);
+        benchmarks_elem.appendChild(label);
+        
+        parseNLoad.checkboxes[BENCHMARKS[i]] = checkbox;
+        
+        sendRequest('test-files/'+BENCHMARKS[i], (function(id, checkbox) {
+            return function(request) {
+                parseNLoad.benchmarks[id] = request.responseText;
+                checkbox.disabled = false;
+            };
+        })(BENCHMARKS[i], checkbox));
     }
+}
+
+function getCheckedBenchmarks() {
+    var checked = [];
+    for(var i in parseNLoad.checkboxes)
+        if(parseNLoad.checkboxes[i].checked)
+            checked.push(i);
+    return checked;
 }
 
 function selectBenchmark(id) {
