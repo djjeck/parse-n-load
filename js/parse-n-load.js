@@ -20,11 +20,7 @@ var BENCHMARKS = [
         'yui2-min.js',
         'yui3-raw.js',
         'yui3-min.js',
-        'github.js',
-        'jquery-1.7.1.min.0.js',
-        'jquery-1.7.1.min.91.js',
-        'jquery-1.7.1.min.124.js',
-        'jquery-1.7.1.min.1.js'
+        'github.js'
     ];
 //var editingCustomBenchmark = true;
 
@@ -422,18 +418,19 @@ function populateBenchmarks() {
         checkbox.disabled = 'disabled';
         label.appendChild(checkbox);
         var span = document.createElement('span');
-        span.innerHTML = BENCHMARKS[i];
+        span.innerHTML = '...';
         label.appendChild(span);
         benchmarks_elem.appendChild(label);
         
         parseNLoad.checkboxes[BENCHMARKS[i]] = checkbox;
         
-        sendRequest('test-data/'+BENCHMARKS[i], (function(id, checkbox) {
+        sendRequest('test-data/'+BENCHMARKS[i], (function(id, checkbox, label) {
             return function(request) {
                 parseNLoad.benchmarks[id] = request.responseText;
                 checkbox.disabled = false;
+                label.innerHTML = id;
             };
-        })(BENCHMARKS[i], checkbox));
+        })(BENCHMARKS[i], checkbox, span));
     }
 }
 

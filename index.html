@@ -23,17 +23,27 @@
         color: #900;
       }
       fieldset {
-        border: none;
-        padding: 20px;
-        background-color: #DDD;
+        padding: 5px;
+        margin: 8px;
+        overflow: auto; /* simulates clear: both */
       }
-      #choose-benchmark {
+      #settings {
+        border-style: none;
+        background-color: #DDD;
+        font-size: smaller;
+      }
+      #settings label {
+        display: block;
+        margin: 4px;
+      }
+      fieldset fieldset {
+        display: block;
+        float: left;
+        width: 30%;
         text-align: left;
       }
-      #choose-benchmark label {
-        display: inline-block;
-        width: 100px;
-        margin: 4px 20px;
+      #choose-benchmark label input {
+        padding: 0px 4px;
       }
       #js-code {
         font-size: 10px;
@@ -72,7 +82,7 @@
 
   <body>
     <h2>Parse-n-Load Javascript {FORK}</h2>
-    <fieldset>
+    <fieldset id="settings">
       <fieldset id="choose-benchmark">
           <legend>Choose one or more benchmarks</legend>
       </fieldset>
@@ -82,20 +92,17 @@
       <br />
       <textarea id="js-code"></textarea>
 -->
-      <br />
       <fieldset>
-          <legend>Choose dimensions</legend>
-          <label><input type="checkbox" name="dimensions[]" value="simple" id="checkbox_simple" checked="checked" /> Simple</label>
-          <label><input type="checkbox" name="dimensions[]" value="parse" id="checkbox_parse" /> Parse and evaluate</label>
-          <label><input type="checkbox" name="dimensions[]" value="eval" id="checkbox_eval" /> eval()</label>
+          <legend>Choose versions</legend>
+          <label><input type="checkbox" name="versions[]" value="simple" id="checkbox_simple" checked="checked" /> Simple</label>
+          <label><input type="checkbox" name="versions[]" value="parse" id="checkbox_parse" /> Parse and evaluate</label>
+          <label><input type="checkbox" name="versions[]" value="eval" id="checkbox_eval" /> eval()</label>
       </fieldset>
-      <br /><br />
-      Runs: <input type="text" size="4" maxlength="4" id="num-runs" value="200" />
-      &nbsp;&nbsp;
-      <small><input type="checkbox" id="ignore-spikes" checked="checked" /> 95th percentile</small>
-      &nbsp;&nbsp;
-      <small><input type="checkbox" id="use-nano" checked="checked" /> use Java time</small>
-      <br /><br />
+      <fieldset>
+          <label>Runs: <input type="text" size="4" maxlength="4" id="num-runs" value="200" /></label>
+          <label><input type="checkbox" id="ignore-spikes" checked="checked" /> 95th percentile</label>
+          <label><input type="checkbox" id="use-nano" checked="checked" /> use Java time</label>
+      </fieldset>
       <button id="run-test" onclick="runTest();"><b>Run Test</b></button>
       <span id="percentage"></span>
     </fieldset>
