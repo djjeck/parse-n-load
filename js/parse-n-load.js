@@ -222,11 +222,10 @@ function flotPlot(data, target) {
               '<td>',variance,' msecs</td></tr>']
             .join('');
     }
-    YAHOO.util.Dom.get('flot_'+target).style.height = '150px';
+    YAHOO.util.Dom.get('flot-container_'+target).style.visibility = 'visible';
     YAHOO.widget.Flot('flot_'+target, data, { lines:{show:true} });
     var img = YAHOO.util.Dom.get('browser-icon_'+target);
     img.src = 'img/icon-'+icon+'.png';
-    img.style.visibility = 'visible';
 }
 
 function match(s) {
@@ -238,13 +237,8 @@ function delel(el) {
 }
 
 function showPercentage(value) {
-    if(value) {
-        YAHOO.util.Dom.get('run-test').style.display = 'none';
-        YAHOO.util.Dom.get('percentage').innerHTML = value+'%';
-    } else {
-        YAHOO.util.Dom.get('run-test').style.display = '';
-        YAHOO.util.Dom.get('percentage').innerHTML = '';
-    }
+    YAHOO.util.Dom.get('run-test').disabled = value?'disabled':false;
+    YAHOO.util.Dom.get('percentage').innerHTML = value?value+'%':'';
 }
 
 //for non-blocking browsers. careful not to blow the stack.
@@ -305,6 +299,10 @@ function runTest() {
         function() {
             return (new Date()).getTime();
         };
+    YAHOO.util.Dom.get('flot-container_parsing').style.visibility = 
+    YAHOO.util.Dom.get('flot-container_evaluation').style.visibility = 
+    YAHOO.util.Dom.get('flot-container_whole').style.visibility = 
+        'hidden';
     
     runs = parseInt(YAHOO.util.Dom.get('num-runs').value||'3');
     

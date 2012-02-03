@@ -39,12 +39,14 @@
       fieldset fieldset {
         display: block;
         float: left;
-        width: 30%;
+        width: 46%;
         text-align: left;
       }
       #choose-benchmark label input {
         padding: 0px 4px;
       }
+      button { padding: 5px 15px; }
+      
       #js-code {
         font-size: 10px;
         width: 75%;
@@ -57,15 +59,17 @@
         text-align: left;
       }
       .flot-container {
+        visibility: hidden;
         position: relative;
       }
       .flot {
+        display: block;
         width: 600px;
+        height: 150px;
         margin-right: 50px;
       }
       .browser-icon {
         position: absolute;
-        visibility: hidden;
         right: 30px;
         bottom: 0px;
       }
@@ -99,7 +103,7 @@
           <label><input type="checkbox" name="versions[]" value="eval" id="checkbox_eval" /> eval()</label>
       </fieldset>
       <fieldset>
-          <label>Runs: <input type="text" size="4" maxlength="4" id="num-runs" value="200" /></label>
+          <label>Runs: <input type="text" size="4" maxlength="4" id="num-runs" value="50" /></label>
           <label><input type="checkbox" id="ignore-spikes" checked="checked" /> 95th percentile</label>
           <label><input type="checkbox" id="use-nano" checked="checked" /> use Java time</label>
       </fieldset>
