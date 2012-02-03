@@ -20,7 +20,15 @@ var BENCHMARKS = [
         'yui2-min.js',
         'yui3-raw.js',
         'yui3-min.js',
-        'github.js'
+        'github.js',
+        'scriptaculous.unused.untouched.js',
+        'scriptaculous.used.untouched.js',
+        'scriptaculous.unused.virtualized.js',
+        'scriptaculous.used.virtualized.js',
+        'jquery.unused.untouched.js',
+        'jquery.used.untouched.js',
+        'jquery.unused.virtualized.js',
+        'jquery.used.virtualized.js'
     ];
 //var editingCustomBenchmark = true;
 
@@ -63,8 +71,8 @@ function init() {
         test: {},
         checkboxes: {},
         makeColor: (function() {
-            var COLORS = [[255,0,0],[0,255,0],[0,0,255],[255,255,0],[0,255,255],[255,0,255],[192,192,192]];
-            var BRIGHTNESS = [1, .7, .4, .7, .4, .7, .4];
+            var COLORS = [[0,255,0],[255,0,0],[0,0,255],[255,0,255],[0,255,255],[255,255,0],[192,192,192]];
+            var BRIGHTNESS = [1, .7, .3, .7, .3, .7, .3];
             var colorIndex = 0;
             var colorCache = {};
             
@@ -269,16 +277,22 @@ function loadFile() {
 
 function makeCodeVersions(code) {
     function escape(code) {
-        return code.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/(\r\n|\r|\n)/g, "\\n'+\n'");
+        return code.
+            replace(/\\/g, '\\\\').
+            replace(/'/g, "\\'").
+            // replace(/(\r\n|\r|\n)/g, "\\n'+\n'"); // inefficient / pretty print
+            replace(/(\r\n|\r|\n)/g, '\\n'); 
     }
     
     var versions = {};
     
     versions[SIMPLE] = code;
-    versions[PARSE] = 'function parse() { '+code+' }';
-    versions[PARSE_AS_STRING] = "function parse_as_string() { eval('"+escape(code)+"'); }";
-    versions[PARSE_AND_EVALUATE] = versions[PARSE] + '; parse();';
-    versions[PARSE_AS_STRING_AND_EVALUATE] = versions[PARSE_AS_STRING]+'; parse_as_string();';
+    versions[PARSE] = 'function parse(){'+code+
+        '//*/\n'+ // breaks unclosed multiline comment, or inline comment on last line
+        '}';
+    versions[PARSE_AS_STRING] = "function parse_as_string(){eval('"+escape(code)+"')}";
+    versions[PARSE_AND_EVALUATE] = versions[PARSE] + ';parse.apply(window);';
+    versions[PARSE_AS_STRING_AND_EVALUATE] = versions[PARSE_AS_STRING]+';parse_as_string.apply(window);';
 
     return versions;
 }
