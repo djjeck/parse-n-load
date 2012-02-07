@@ -81,6 +81,7 @@
     <script src="js/yui2.js"></script>
     <script src="js/yui.flot.js"></script>
     <!--[if IE]><script src="js/excanvas.min.js"></script><![endif]-->
+    <script src="js/benchmarks.js"></script>
     <script src="js/parse-n-load.js"></script>
   </head>
 
@@ -104,7 +105,7 @@
       </fieldset>
       <fieldset>
           <label>Runs: <input type="text" size="4" maxlength="4" id="num-runs" value="50" /></label>
-          <label><input type="checkbox" id="ignore-spikes" checked="checked" /> 95th percentile</label>
+          <label><input type="checkbox" id="ignore-spikes" checked="checked" /> 90th percentile</label>
           <label><input type="checkbox" id="use-nano" checked="checked" /> use Java time</label>
       </fieldset>
       <button id="run-test" onclick="runTest();"><b>Run Test</b></button>
@@ -135,7 +136,7 @@
 
     <iframe name="js" src="blank.html" id="js" ></iframe>
 
-    <p id="percentile-info"><b>Why 95th Percentile?</b> If you uncheck that box you'll probably see tall, regular spikes that dwarf the rest of the measurements. These are caused by the browser pausing to do garbage collection. It's good to remember GC halts but they can get in the way of informative graphs.</p>
+    <p id="percentile-info"><b>Why 90th Percentile?</b> If you uncheck that box you'll probably see tall, regular spikes that dwarf the rest of the measurements. These are caused by the browser pausing to do garbage collection. It's good to remember GC halts but they can get in the way of informative graphs.</p>
     
     <applet id="nanoTime" code="nano" archive="nano.jar"></applet>
     

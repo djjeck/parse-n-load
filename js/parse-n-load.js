@@ -9,30 +9,10 @@ var EVALUATE_PARSED_AS_STRING = 6;
 var extendedTestcases = 7;
 var LABELS = ['Simple', 'Parse only', 'Parse as string', 'Parse, then evaluate', 'Parse and call eval()', 'Evaluate parsed', 'Call eval()'];
 
-var BENCHMARKS = [
-        'jquery-1.7.1.js',
-        'jquery-1.7.1.min.js',
-        'jquery-ui-1.7.2-min.js',
-        'scriptaculous-raw.js',
-        'scriptaculous-min.js',
-        'ymail.js',
-        'yui2-raw.js',
-        'yui2-min.js',
-        'yui3-raw.js',
-        'yui3-min.js',
-        'github.js',
-        'scriptaculous.unused.untouched.js',
-        'scriptaculous.used.untouched.js',
-        'scriptaculous.unused.virtualized.js',
-        'scriptaculous.used.virtualized.js',
-        'jquery.unused.untouched.js',
-        'jquery.used.untouched.js',
-        'jquery.unused.virtualized.js',
-        'jquery.used.virtualized.js'
-    ];
 //var editingCustomBenchmark = true;
 
 function Pointer(tests, runs) {
+    var SERIAL = false;
     var run = 0;
         benchmark = 0;
     var current = null,
@@ -41,18 +21,30 @@ function Pointer(tests, runs) {
     var advance = function() {
         current = tests[benchmark];
         currentRun = run;
-        benchmark++;
-        if(benchmark >= tests.length) {
-            benchmark = 0;
+        if(SERIAL) {
             run++;
+            if(run >= runs) {
+                run = 0;
+                benchmark++;
+            }
+        } else {
+            benchmark++;
+            if(benchmark >= tests.length) {
+                benchmark = 0;
+                run++;
+            }
         }
     };
     
     this.getRun = function() { return currentRun; };
     
-    this.getPercentage = function() { return Math.ceil((run + benchmark / tests.length) * 100 / runs); };
+    this.getPercentage = function() {
+        return SERIAL ?
+            Math.ceil((benchmark + run / runs) * 100 / tests.length) : 
+            Math.ceil((run + benchmark / tests.length) * 100 / runs);
+    };
     
-    this.hasNext = function() { return run < runs; };
+    this.hasNext = function() { return run < runs && benchmark < tests.length; };
     
     this.next = function() {
         if(!this.hasNext())
@@ -219,7 +211,7 @@ function flotPlot(data, target) {
     
     for(var testcase=0; testcase<data.length; testcase++) {
         if (YAHOO.util.Dom.get('ignore-spikes').checked) {
-            data[testcase].data = nthPercentile(data[testcase].data, 0.95);
+            data[testcase].data = nthPercentile(data[testcase].data, 0.90);
         }
         var lst = map(function(x){return x[1];}, data[testcase].data);
         var mean = avg(lst).toFixed(2);
@@ -261,7 +253,7 @@ function loadFile() {
         var i = parseNLoad.pointer.getRun();
         doc.write('<script>top.parseNLoad.pointer.current().data['+i+'] = ['+i+', top.time() - start];</script>');
         doc.write('<script>var e=document.getElementById("test"); e.parentNode.removeChild(e);</script>');
-        doc.write('<script>setTimeout(function(){top.loadFile();}, 1);</script>');
+        doc.write('<script>setTimeout(function(){top.loadFile();}, 15);</script>');
         doc.close();
     } else {
         showPercentage();
@@ -377,7 +369,7 @@ function runTestCases() {
         showPercentage();
         plotData();
     } else {
-        setTimeout(function(){loadFile();}, 1);
+        setTimeout(function(){loadFile();}, 15);
     }
 }
 
@@ -415,6 +407,15 @@ function populateBenchmarks() {
         req.send();
     }
     // end http://www.quirksmode.org/js/xmlhttp.html
+    var formatFileSize = function(bytes) {
+        var UNITS = ['b', 'Kb', 'Mb', 'Gb'];
+        var unit = 0;
+        while(bytes > 1024) {
+            bytes /= 1024;
+            unit++;
+        }
+        return bytes.toFixed(2)+UNITS[unit];
+    }
     
     YAHOO.util.Dom.get('choose-benchmark').onchange = function() {
         selectBenchmark(this.value);
@@ -440,7 +441,7 @@ function populateBenchmarks() {
             return function(request) {
                 parseNLoad.benchmarks[id] = request.responseText;
                 checkbox.disabled = false;
-                label.innerHTML = id;
+                label.innerHTML = id+' ('+formatFileSize(parseNLoad.benchmarks[id].length)+')';
             };
         })(BENCHMARKS[i], checkbox, span));
     }
