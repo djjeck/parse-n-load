@@ -417,27 +417,35 @@ function populateBenchmarks() {
     
     var  benchmarks_elem = YAHOO.util.Dom.get('choose-benchmark');
     for(var i=0; i<BENCHMARKS.length; i++) {
-        var label = document.createElement('label');
+        var span = document.createElement('span');
+        span.innerHTML = BENCHMARKS[i];
+        
         var checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
-        checkbox.name = 'benchmarks[]';
         checkbox.value = BENCHMARKS[i];
-        checkbox.disabled = 'disabled';
+        
+        var label = document.createElement('label');
         label.appendChild(checkbox);
-        var span = document.createElement('span');
-        span.innerHTML = '...';
         label.appendChild(span);
         benchmarks_elem.appendChild(label);
         
-        parseNLoad.checkboxes[BENCHMARKS[i]] = checkbox;
-        
-        sendRequest('test-data/'+BENCHMARKS[i], (function(id, checkbox, label) {
-            return function(request) {
-                parseNLoad.benchmarks[id] = request.responseText;
-                checkbox.disabled = false;
-                label.innerHTML = id+' ('+formatFileSize(parseNLoad.benchmarks[id].length)+')';
-            };
-        })(BENCHMARKS[i], checkbox, span));
+        checkbox.onclick =  (function(id, span, checkbox) {
+            return function() {
+                checkbox.onclick = function() {}; // only first time
+                checkbox.disabled = 'disabled';
+                checkbox.checked = false;
+                span.innerHTML = id+'...';
+                
+                sendRequest('test-data/'+id, function(request) {
+                        parseNLoad.benchmarks[id] = request.responseText;
+                        parseNLoad.checkboxes[id] = checkbox;
+                        
+                        span.innerHTML = id+' ('+formatFileSize(parseNLoad.benchmarks[id].length)+')';
+                        checkbox.disabled = false;
+                        checkbox.checked = 'checked';
+                    });
+                };
+        })(BENCHMARKS[i], span, checkbox);
     }
 }
 
