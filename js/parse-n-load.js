@@ -9,8 +9,6 @@ var EVALUATE_PARSED_AS_STRING = 6;
 var extendedTestcases = 7;
 var LABELS = ['Simple', 'Parse only', 'Parse as string', 'Parse, then evaluate', 'Parse and call eval()', 'Evaluate parsed', 'Call eval()'];
 
-//var editingCustomBenchmark = true;
-
 function Pointer(tests, runs) {
     var SERIAL = false;
     var run = 0;
@@ -417,10 +415,6 @@ function populateBenchmarks() {
         return bytes.toFixed(2)+UNITS[unit];
     }
     
-    YAHOO.util.Dom.get('choose-benchmark').onchange = function() {
-        selectBenchmark(this.value);
-    }
-    
     var  benchmarks_elem = YAHOO.util.Dom.get('choose-benchmark');
     for(var i=0; i<BENCHMARKS.length; i++) {
         var label = document.createElement('label');
@@ -453,22 +447,4 @@ function getCheckedBenchmarks() {
         if(parseNLoad.checkboxes[i].checked)
             checked.push(i);
     return checked;
-}
-
-function selectBenchmark(id) {
-    /*
-    var codeArea = YAHOO.util.Dom.get('js-code');
-    if(id == 'custom') {
-        if(editingCustomBenchmark)
-            return;
-        codeArea.disabled = false;
-        editingCustomBenchmark = true;
-    } else {
-        if(editingCustomBenchmark)
-            benchmarks['custom'] = codeArea.value;
-        codeArea.disabled = 'disabled';
-        editingCustomBenchmark = false;
-    }
-    codeArea.value = benchmarks[id];
-    */
 }
