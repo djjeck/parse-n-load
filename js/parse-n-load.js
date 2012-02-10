@@ -453,5 +453,5 @@ function getCheckedBenchmarks() {
     for(var i in parseNLoad.checkboxes)
         if(parseNLoad.checkboxes[i].checked)
             checked.push(i);
-    return checked;
+    return checked.sort();
 }
