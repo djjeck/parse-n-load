@@ -143,9 +143,11 @@ function stdev(lst, mean) {
 function ignoreSpikes(data) {
     var lst = map(function(x){return x[1];},data);
     var max = reduce(Math.max, lst, 0);
+    var min = reduce(Math.min, lst, max);
     var filtered = filter(function(x){return x[1]<max;}, data);
     
-    if(stdev(map(function(x){return x[1];},filtered)) / stdev(lst) > .9)
+    var tolerance = 1-10/data.length; // percentage of spike tolerance on data
+    if(stdev(map(function(x){return x[1];},filtered)) / stdev(lst) > tolerance)
         return data; // no gain
     return ignoreSpikes(filtered); // repeat
 }
