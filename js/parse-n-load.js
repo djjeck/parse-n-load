@@ -156,7 +156,7 @@ function plotData() {
     var results = YAHOO.util.Dom.get('results');
     results.innerHTML = '<tr><td colspan="3">'+navigator.userAgent+'</td></tr>'+
         '<tr><td colspan="3">Is blocking: '+blocking+'</td></tr>'+
-        '<tr><th></th><th>Mean Average</th><th>Std. Deviation</th></tr>';
+        '<tr><th></th><th>Mean Average</th><th>Std. Deviation</th><th>Discarded samples</th></tr>';
     
     var data = parseNLoad.test;
     for(var script in data) {
@@ -203,8 +203,11 @@ function flotPlot(data, target) {
     var results = YAHOO.util.Dom.get('results');
     
     for(var testcase=0; testcase<data.length; testcase++) {
+        var discarded = 0;
         if (YAHOO.util.Dom.get('ignore-spikes').checked) {
+            discarded = data[testcase].data.length;
             data[testcase].data = ignoreSpikes(data[testcase].data);
+            discarded -= data[testcase].data.length;
         }
         var lst = map(function(x){return x[1];}, data[testcase].data);
         var mean = avg(lst).toFixed(2);
@@ -212,7 +215,8 @@ function flotPlot(data, target) {
         results.innerHTML += [
               '<tr><th>',data[testcase].label,'</th>',
               '<td>',mean,' msecs</td>',
-              '<td>',variance,' msecs</td></tr>']
+              '<td>',variance,' msecs</td>',
+              '<td>',discarded,'</td></tr>']
             .join('');
     }
     
