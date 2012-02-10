@@ -112,7 +112,7 @@ function map(fn, lst) {
 function filter(fn, lst) {
     var ret = [];
     for (var i=0; i<lst.length; i++) {
-        if (fn(lst[i])) {
+        if (fn(lst[i], i)) {
             ret.push(lst[i]);
         }
     }
@@ -131,30 +131,23 @@ function sum(lst) {
 }
 
 function avg(lst) {
-    var tot = sum(lst);
-    return tot / lst.length;
+    return sum(lst) / lst.length;
 }
 
 function stdev(lst, mean) {
-    var tot = sum(lst);
     mean = mean || avg(lst);
     var squares = map(function(x){return (x-mean)*(x-mean);}, lst);
     return Math.sqrt(sum(squares) / (lst.length-1));
 }
 
-function le(lst, lim) {
-    return filter(function(a){return a[1]<=lim;}, lst);
-}
-
-function nonzero(lst) {
-    return filter(function(a){return a[1]>0;}, lst);
-}
-
-function nthPercentile(lst, n) {
-    var a = lst.slice();
-    a.sort(function(x,y){return x[1]-y[1];});
-    var lim = a[Math.floor(a.length * n)][1];
-    return nonzero(le(lst, lim));
+function ignoreSpikes(data) {
+    var lst = map(function(x){return x[1];},data);
+    var max = reduce(Math.max, lst, 0);
+    var filtered = filter(function(x){return x[1]<max;}, data);
+    
+    if(stdev(map(function(x){return x[1];},filtered)) / stdev(lst) > .9)
+        return data; // no gain
+    return ignoreSpikes(filtered); // repeat
 }
 
 function plotData() {
@@ -207,10 +200,14 @@ function elaborateData(data) {
 function flotPlot(data, target) {
     var results = YAHOO.util.Dom.get('results');
     
+var bk = data[0].data.slice(0);
     for(var testcase=0; testcase<data.length; testcase++) {
+var str = '<td><pre>'+map(function(x){return x.toFixed(3)},map(function(x){return x[1];}, data[testcase].data)).join('\n')+'</pre></td>';
         if (YAHOO.util.Dom.get('ignore-spikes').checked) {
-            data[testcase].data = nthPercentile(data[testcase].data, 0.90);
+            data[testcase].data = ignoreSpikes(data[testcase].data);
         }
+str += '<td><pre>'+map(function(x){return x.toFixed(3)},map(function(x){return x[1];}, data[testcase].data)).join('\n')+'</pre></td>';
+results.innerHTML += '<tr>'+str+'<tr>';
         var lst = map(function(x){return x[1];}, data[testcase].data);
         var mean = avg(lst).toFixed(2);
         var variance = stdev(lst, mean).toFixed(2);
@@ -220,6 +217,8 @@ function flotPlot(data, target) {
               '<td>',variance,' msecs</td></tr>']
             .join('');
     }
+data.push({data: bk});
+    
     YAHOO.util.Dom.get('flot-container_'+target).style.visibility = 'visible';
     YAHOO.widget.Flot('flot_'+target, data, { lines:{show:true} });
     var img = YAHOO.util.Dom.get('browser-icon_'+target);
