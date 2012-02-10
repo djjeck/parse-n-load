@@ -200,14 +200,10 @@ function elaborateData(data) {
 function flotPlot(data, target) {
     var results = YAHOO.util.Dom.get('results');
     
-var bk = data[0].data.slice(0);
     for(var testcase=0; testcase<data.length; testcase++) {
-var str = '<td><pre>'+map(function(x){return x.toFixed(3)},map(function(x){return x[1];}, data[testcase].data)).join('\n')+'</pre></td>';
         if (YAHOO.util.Dom.get('ignore-spikes').checked) {
             data[testcase].data = ignoreSpikes(data[testcase].data);
         }
-str += '<td><pre>'+map(function(x){return x.toFixed(3)},map(function(x){return x[1];}, data[testcase].data)).join('\n')+'</pre></td>';
-results.innerHTML += '<tr>'+str+'<tr>';
         var lst = map(function(x){return x[1];}, data[testcase].data);
         var mean = avg(lst).toFixed(2);
         var variance = stdev(lst, mean).toFixed(2);
@@ -217,7 +213,6 @@ results.innerHTML += '<tr>'+str+'<tr>';
               '<td>',variance,' msecs</td></tr>']
             .join('');
     }
-data.push({data: bk});
     
     YAHOO.util.Dom.get('flot-container_'+target).style.visibility = 'visible';
     YAHOO.widget.Flot('flot_'+target, data, { lines:{show:true} });
