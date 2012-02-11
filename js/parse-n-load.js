@@ -209,8 +209,10 @@ function flotPlot(data, target) {
         for(var i=0; i<data.length; i++)
             if(checkboxes[i].checked)
                 filteredData.push(data[i]);
-        if(filteredData.length == 0)
+        if(filteredData.length == 0) {
             checkbox.checked = 'checked';
+            return;
+        }
         YAHOO.widget.Flot('flot_'+target, filteredData, { lines:{show:true} });
     }
     
@@ -240,7 +242,7 @@ function flotPlot(data, target) {
             checkbox.type = 'checkbox';
             checkbox.checked = 'checked';
             checkbox.value = testcase;
-            checkbox.onchange = drawGraph;
+            checkbox.onchange = function() { drawGraph(this); }; 
             checkboxes[testcase] = checkbox;
             label.appendChild(checkbox);
             
