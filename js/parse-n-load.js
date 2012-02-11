@@ -199,8 +199,22 @@ function elaborateData(data) {
     return data;
 }
 
-function flotPlot(data, target) {
+function flotPlot(data, target) {    
     var results = YAHOO.util.Dom.get('results');
+    var controls = YAHOO.util.Dom.get('flot-controls_'+target);
+    var checkboxes = new Array(data.length);
+    
+    var drawGraph = function(checkbox) {
+        var filteredData = [];
+        for(var i=0; i<data.length; i++)
+            if(checkboxes[i].checked)
+                filteredData.push(data[i]);
+        if(filteredData.length == 0)
+            checkbox.checked = 'checked';
+        YAHOO.widget.Flot('flot_'+target, filteredData, { lines:{show:true} });
+    }
+    
+    controls.innerHTML = '';
     
     for(var testcase=0; testcase<data.length; testcase++) {
         var discarded = 0;
@@ -218,12 +232,31 @@ function flotPlot(data, target) {
               '<td>',variance,' msecs</td>',
               '<td>',discarded,'</td></tr>']
             .join('');
+        
+        {
+            var label = document.createElement('label');
+            
+            var checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.checked = 'checked';
+            checkbox.value = testcase;
+            checkbox.onchange = drawGraph;
+            checkboxes[testcase] = checkbox;
+            label.appendChild(checkbox);
+            
+            var span = document.createElement('span');
+            span.innerHTML = data[testcase].label;
+            label.appendChild(span);
+            
+            controls.appendChild(label);
+        }
     }
     
     YAHOO.util.Dom.get('flot-container_'+target).style.visibility = 'visible';
-    YAHOO.widget.Flot('flot_'+target, data, { lines:{show:true} });
     var img = YAHOO.util.Dom.get('browser-icon_'+target);
     img.src = 'img/icon-'+icon+'.png';
+    
+    drawGraph();
 }
 
 function match(s) {

@@ -61,6 +61,18 @@
       .flot-container {
         visibility: hidden;
         position: relative;
+        padding-right: 400px;
+      }
+      .flot-container .controls {
+        position: absolute;
+        width: 400px;
+        top: 0px;
+        right: 0px;
+        text-align: left;
+        font-size: smaller;
+      }
+      .flot-container .controls label {
+        display: block;
       }
       .flot {
         display: block;
@@ -120,16 +132,19 @@
           <h4 class="title">Parsing</h4>
           <div id="flot_parsing" class="flot"></div>
           <img src="" id="browser-icon_parsing" class="browser-icon" />
+          <div id="flot-controls_parsing" class="controls"></div>
       </div>
       <div id="flot-container_evaluation" class="flot-container">
           <h4 class="title">Evaluation</h4>
           <div id="flot_evaluation" class="flot"></div>
           <img src="" id="browser-icon_evaluation" class="browser-icon" />
+          <div id="flot-controls_evaluation" class="controls"></div>
       </div>
       <div id="flot-container_whole" class="flot-container">
           <h4 class="title">Overall</h4>
           <div id="flot_whole" class="flot"></div>
           <img src="" id="browser-icon_whole" class="browser-icon" />
+          <div id="flot-controls_whole" class="controls"></div>
       </div>
     </div>
     </div>
