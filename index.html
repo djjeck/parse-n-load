@@ -58,21 +58,21 @@
         margin: 20px 40px;
         text-align: left;
       }
+      #results .color {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        margin: 0px 3px;
+      }
+      button.discard-samples {
+        font-size: normal;
+        padding: 3px;
+        border-style: none;
+        background-color: transparent;
+      }
       .flot-container {
         visibility: hidden;
         position: relative;
-        padding-right: 400px;
-      }
-      .flot-container .controls {
-        position: absolute;
-        width: 400px;
-        top: 0px;
-        right: 0px;
-        text-align: left;
-        font-size: smaller;
-      }
-      .flot-container .controls label {
-        display: block;
       }
       .flot {
         display: block;
@@ -103,12 +103,7 @@
       <fieldset id="choose-benchmark">
           <legend>Choose one or more benchmarks</legend>
       </fieldset>
-<!--
-      <br />
-      Or paste your code here
-      <br />
-      <textarea id="js-code"></textarea>
--->
+
       <fieldset>
           <legend>Choose versions</legend>
           <label><input type="checkbox" name="versions[]" value="simple" id="checkbox_simple" checked="checked" /> Simple</label>
@@ -117,7 +112,7 @@
       </fieldset>
       <fieldset>
           <label>Runs: <input type="text" size="4" maxlength="4" id="num-runs" value="50" /></label>
-          <label><input type="checkbox" id="ignore-spikes" checked="checked" /> Detect garbage collection</label>
+          <label><input type="checkbox" id="detect-gc" checked="checked" /> Detect garbage collection</label>
           <label><input type="checkbox" id="use-nano" checked="checked" /> use Java time</label>
       </fieldset>
       <button id="run-test" onclick="runTest();"><b>Run Test</b></button>
@@ -126,35 +121,26 @@
 
     <table id="results"></table>
 
-    <div>
     <div style="position:relative;display:inline-block;">
+      <div id="flot-container_whole" class="flot-container">
+          <h4 class="title">Overall</h4>
+          <div id="flot_whole" class="flot"></div>
+          <img src="" id="browser-icon_whole" class="browser-icon" />
+      </div>
       <div id="flot-container_parsing" class="flot-container">
           <h4 class="title">Parsing</h4>
           <div id="flot_parsing" class="flot"></div>
           <img src="" id="browser-icon_parsing" class="browser-icon" />
-          <div id="flot-controls_parsing" class="controls"></div>
       </div>
       <div id="flot-container_evaluation" class="flot-container">
           <h4 class="title">Evaluation</h4>
           <div id="flot_evaluation" class="flot"></div>
           <img src="" id="browser-icon_evaluation" class="browser-icon" />
-          <div id="flot-controls_evaluation" class="controls"></div>
       </div>
-      <div id="flot-container_whole" class="flot-container">
-          <h4 class="title">Overall</h4>
-          <div id="flot_whole" class="flot"></div>
-          <img src="" id="browser-icon_whole" class="browser-icon" />
-          <div id="flot-controls_whole" class="controls"></div>
-      </div>
-    </div>
     </div>
 
     <iframe name="js" src="blank.html" id="js" ></iframe>
 
-    <p id="percentile-info"><b>Why 90th Percentile?</b> If you uncheck that box you'll probably see tall, regular spikes that dwarf the rest of the measurements. These are caused by the browser pausing to do garbage collection. It's good to remember GC halts but they can get in the way of informative graphs.</p>
-    
     <applet id="nanoTime" code="nano" archive="nano.jar"></applet>
-    
   </body>
-
 </html>

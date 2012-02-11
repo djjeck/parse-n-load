@@ -9,6 +9,8 @@ var EVALUATE_PARSED_AS_STRING = 6;
 var extendedTestcases = 7;
 var LABELS = ['Simple', 'Parse only', 'Parse as string', 'Parse, then evaluate', 'Parse and call eval()', 'Evaluate parsed', 'Call eval()'];
 
+var DEFAULT_TOLERANCE = 10;
+
 function Pointer(tests, runs) {
     var SERIAL = false;
     var run = 0;
@@ -140,18 +142,6 @@ function stdev(lst, mean) {
     return Math.sqrt(sum(squares) / (lst.length-1));
 }
 
-function ignoreSpikes(data) {
-    var lst = map(function(x){return x[1];},data);
-    var max = reduce(Math.max, lst, 0);
-    var min = reduce(Math.min, lst, max);
-    var filtered = filter(function(x){return x[1]<max;}, data);
-    
-    var tolerance = 1-10/data.length; // percentage of spike tolerance on data
-    if(stdev(map(function(x){return x[1];},filtered)) / stdev(lst) > tolerance)
-        return data; // no gain
-    return ignoreSpikes(filtered); // repeat
-}
-
 function plotData() {
     var results = YAHOO.util.Dom.get('results');
     results.innerHTML = '<tr><td colspan="3">'+navigator.userAgent+'</td></tr>'+
@@ -179,9 +169,9 @@ function plotData() {
             flotPlot(plot, id);
     }
     
+    plotIfAny('whole', SIMPLE, PARSE_AND_EVALUATE, PARSE_AS_STRING_AND_EVALUATE);
     plotIfAny('parsing', PARSE, PARSE_AS_STRING);
     plotIfAny('evaluation', EVALUATE_PARSED, EVALUATE_PARSED_AS_STRING);
-    plotIfAny('whole', SIMPLE, PARSE_AND_EVALUATE, PARSE_AS_STRING_AND_EVALUATE);
 }
 
 function elaborateData(data) {
@@ -201,7 +191,6 @@ function elaborateData(data) {
 
 function flotPlot(data, target) {    
     var results = YAHOO.util.Dom.get('results');
-    var controls = YAHOO.util.Dom.get('flot-controls_'+target);
     var checkboxes = new Array(data.length);
     
     var drawGraph = function(checkbox) {
@@ -213,45 +202,84 @@ function flotPlot(data, target) {
             checkbox.checked = 'checked';
             return;
         }
-        YAHOO.widget.Flot('flot_'+target, filteredData, { lines:{show:true} });
+        YAHOO.widget.Flot('flot_'+target, filteredData, { lines:{show:true}, legend:{show:false} });
     }
     
-    controls.innerHTML = '';
-    
     for(var testcase=0; testcase<data.length; testcase++) {
-        var discarded = 0;
-        if (YAHOO.util.Dom.get('ignore-spikes').checked) {
-            discarded = data[testcase].data.length;
-            data[testcase].data = ignoreSpikes(data[testcase].data);
-            discarded -= data[testcase].data.length;
-        }
-        var lst = map(function(x){return x[1];}, data[testcase].data);
-        var mean = avg(lst).toFixed(2);
-        var variance = stdev(lst, mean).toFixed(2);
-        results.innerHTML += [
-              '<tr><th>',data[testcase].label,'</th>',
-              '<td>',mean,' msecs</td>',
-              '<td>',variance,' msecs</td>',
-              '<td>',discarded,'</td></tr>']
-            .join('');
+        var tr = document.createElement('tr');
         
-        {
-            var label = document.createElement('label');
+        var rowHeader = document.createElement('th');
+        
+        var label = document.createElement('label');
+        
+        var color = document.createElement('color');
+        color.className = 'color';
+        color.style.backgroundColor = data[testcase].color;
+        label.appendChild(color);
+        
+        var checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = 'checked';
+        checkbox.value = testcase;
+        checkbox.onchange = function() { drawGraph(this); }; 
+        checkboxes[testcase] = checkbox;
+        label.appendChild(checkbox);
+        
+        var span = document.createElement('span');
+        span.innerHTML = data[testcase].label;
+        label.appendChild(span);
+        rowHeader.appendChild(label);
             
-            var checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.checked = 'checked';
-            checkbox.value = testcase;
-            checkbox.onchange = function() { drawGraph(this); }; 
-            checkboxes[testcase] = checkbox;
-            label.appendChild(checkbox);
+        tr.appendChild(rowHeader);
+              
+        (function(testcase) {
+            var tdMean = document.createElement('td');
+            tr.appendChild(tdMean);
+            var tdStdDev = document.createElement('td');
+            tr.appendChild(tdStdDev);
             
+            var originalData = data[testcase].data;
+            var discardSamples = YAHOO.util.Dom.get('detect-gc').checked ? detectSampleDiscard(originalData) : 0;
+
             var span = document.createElement('span');
-            span.innerHTML = data[testcase].label;
-            label.appendChild(span);
             
-            controls.appendChild(label);
-        }
+            var cleanData = function(discardSamples) {
+                data[testcase].data = removeMax(originalData, discardSamples);
+                var lst = map(function(x){return x[1];}, data[testcase].data);
+                tdMean.innerHTML = avg(lst).toFixed(2)+' msec';
+                tdStdDev.innerHTML = stdev(lst).toFixed(2)+' msec';
+                span.innerHTML = (originalData.length - data[testcase].data.length);
+            }
+            
+            var less = document.createElement('button');
+            less.className = 'discard-samples';
+            less.innerHTML = '-';
+            less.onclick = function() {
+                discardSamples = Math.max(0, discardSamples-1);
+                cleanData(discardSamples);
+                drawGraph(less);
+            }
+            
+            var more = document.createElement('button');
+            more.className = 'discard-samples';
+            more.innerHTML = '+';
+            more.onclick = function() {
+                discardSamples = Math.min(originalData.length/2, discardSamples+1);
+                cleanData(discardSamples);
+                drawGraph(more);
+            }
+            
+            var td = document.createElement('td');
+            td.appendChild(span);
+            td.appendChild(more);
+            td.appendChild(less);
+            tr.appendChild(td);
+            
+            cleanData(discardSamples);
+            
+        })(testcase);
+        
+        results.appendChild(tr);
     }
     
     YAHOO.util.Dom.get('flot-container_'+target).style.visibility = 'visible';
@@ -259,6 +287,27 @@ function flotPlot(data, target) {
     img.src = 'img/icon-'+icon+'.png';
     
     drawGraph();
+}
+
+function detectSampleDiscard(data) {
+    var filtered = removeMax(data);
+    
+    if(
+            stdev(map(function(x){return x[1];},filtered)) /
+            stdev(map(function(x){return x[1];},data)) >
+            1-DEFAULT_TOLERANCE/data.length)
+        return 0; // no gain
+    return detectSampleDiscard(filtered) + 1; // repeat
+}
+
+function removeMax(data, repeat) {
+    if(typeof repeat == 'undefined')
+        repeat = 1;
+    while(repeat-->0) { 
+        var max = reduce(Math.max, map(function(x){return x[1];},data), 0);
+        data = filter(function(x){return x[1]<max;}, data);
+    }
+    return data;
 }
 
 function match(s) {
