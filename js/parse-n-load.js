@@ -148,9 +148,6 @@ function stdev(lst, mean) {
 }
 
 function plotData() {
-    var results = YAHOO.util.Dom.get('results');
-    results.innerHTML = '<tr><th></th><th>Mean Average</th><th>Std. Deviation</th><th>Discarded samples</th></tr>';
-    
     var data = parseNLoad.test;
     for(var script in data) {
         data[script].data = elaborateData(data[script].data);
@@ -381,6 +378,8 @@ function runTest() {
         function() {
             return (new Date()).getTime();
         };
+    YAHOO.util.Dom.get('results').innerHTML = '<tr><th></th><th>Mean Average</th><th>Std. Deviation</th><th>Discarded samples</th></tr>';
+    
     YAHOO.util.Dom.get('flot-container_parsing').style.visibility = 
     YAHOO.util.Dom.get('flot-container_evaluation').style.visibility = 
     YAHOO.util.Dom.get('flot-container_whole').style.visibility = 
