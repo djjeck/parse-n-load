@@ -85,19 +85,24 @@ function init() {
     runs = 3;
     i = 0;
 
-    icon = '';
-    if (match('Safari')) {
-        icon = 'safari';
-        if (match('Chrome')) {
-            icon = 'chrome';
-        }
-    } else if (match('Firefox')) {
-        icon = 'firefox';
-    } else if (match('Opera')) {
-        icon = 'opera';
-    } else if (match('MSIE')) {
-        icon = 'ie';
+    var match = function(s) {
+        return navigator.userAgent.indexOf(s) !== -1;
     }
+    
+    // blocking = (Safari 4 (but not Chrome nor Android)) or (Opera)
+    window.parseNLoad.blocking = (match('Safari') && !match('Chrome') && !match('Android') && match('Version/4')) || match('Opera');
+
+    window.parseNLoad.icon = (function() {
+        if (match('Android')) return 'android';
+        if (match('Chrome')) return 'chrome';
+        if (match('Safari')) return 'safari';
+        if (match('Firefox')) return 'firefox';
+        if (match('Opera')) return 'opera';
+        if (match('MSIE')) return 'ie';
+        return '';
+    })();
+    
+    YAHOO.util.Dom.get('browser-info').innerHTML = '<h4>'+navigator.userAgent+'</h4><p>'+(window.parseNLoad.blocking ? 'blocking: use a loop' : 'non-blocking: use a callback')+'</p>';
     
     populateBenchmarks();
 }
@@ -144,9 +149,7 @@ function stdev(lst, mean) {
 
 function plotData() {
     var results = YAHOO.util.Dom.get('results');
-    results.innerHTML = '<tr><td colspan="3">'+navigator.userAgent+'</td></tr>'+
-        '<tr><td colspan="3">Is blocking: '+blocking+'</td></tr>'+
-        '<tr><th></th><th>Mean Average</th><th>Std. Deviation</th><th>Discarded samples</th></tr>';
+    results.innerHTML = '<tr><th></th><th>Mean Average</th><th>Std. Deviation</th><th>Discarded samples</th></tr>';
     
     var data = parseNLoad.test;
     for(var script in data) {
@@ -284,7 +287,7 @@ function flotPlot(data, target) {
     
     YAHOO.util.Dom.get('flot-container_'+target).style.visibility = 'visible';
     var img = YAHOO.util.Dom.get('browser-icon_'+target);
-    img.src = 'img/icon-'+icon+'.png';
+    img.src = 'img/icon-'+window.parseNLoad.icon+'.png';
     
     drawGraph();
 }
@@ -308,10 +311,6 @@ function removeMax(data, repeat) {
         data = filter(function(x){return x[1]<max;}, data);
     }
     return data;
-}
-
-function match(s) {
-    return nav.indexOf(s) !== -1;
 }
 
 function delel(el) {
@@ -364,11 +363,6 @@ function makeCodeVersions(code) {
 
     return versions;
 }
-
-// browsecap crap.
-// blocking = (Safari 4 (but not Chrome nor Android)) or (Opera)
-var nav = navigator.userAgent;
-var blocking = (match('Safari') && !match('Chrome') && !match('Android') && match('Version/4')) || match('Opera');
 
 
 function runTest() {
@@ -435,7 +429,7 @@ function runTestCases() {
     // Chrome does not block, but the naive code path blows the
     // stack after just 20 iterations (ORLY? RLY.)
     // hence the setTimeout(fn, 0);
-    if (blocking) {
+    if (window.parseNLoad.blocking) {
         while(parseNLoad.pointer.hasNext()) {
             showPercentage(parseNLoad.pointer.getPercentage());
             var test = parseNLoad.pointer.next();
