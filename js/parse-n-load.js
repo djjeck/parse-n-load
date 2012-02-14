@@ -81,6 +81,10 @@ function init() {
     jsframe = YAHOO.util.Dom.get('js');
     win = jsframe.contentWindow;
     doc = win.document;
+    window.onerror = win.onerror = function(error, url, line) {
+        alert("Uncaught error:\n"+error+"\n"+url+":"+line);
+        return true;
+    }
     script = [];
     runs = 3;
     i = 0;
