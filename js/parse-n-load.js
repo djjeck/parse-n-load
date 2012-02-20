@@ -202,12 +202,31 @@ function flotPlot(data, target) {
         for(var i=0; i<data.length; i++)
             if(checkboxes[i].checked)
                 filteredData.push(data[i]);
+        
         if(filteredData.length == 0) {
             checkbox.checked = 'checked';
             return;
         }
-        YAHOO.widget.Flot('flot_'+target, filteredData, { lines:{show:true}, legend:{show:false} });
+        
+        var sort = YAHOO.util.Dom.get('sort-data_'+target).checked;
+        var sortedData = [];
+        if(sort) {
+            for(var i=0; i<filteredData.length; i++) {
+                sortedData[i] = {
+                    color: filteredData[i].color,
+                    label: filteredData[i].label,
+                    data: map(function(x) { return x.slice(0); }, filteredData[i].data) // deep clone
+                };
+                sortedData[i].data.sort(function(a,b){ return a[1]-b[1]; });
+                for(var j=0; j<sortedData[i].data.length; j++)
+                    sortedData[i].data[j][0] = j;
+            }
+        }
+        
+        YAHOO.widget.Flot('flot_'+target, sort ? sortedData : filteredData, { lines:{show:true}, legend:{show:false} });
     }
+    
+    YAHOO.util.Dom.get('sort-data_'+target).onclick = function() { drawGraph(this); }
     
     for(var testcase=0; testcase<data.length; testcase++) {
         var tr = document.createElement('tr');
