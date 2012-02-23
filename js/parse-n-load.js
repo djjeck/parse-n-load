@@ -97,10 +97,10 @@ function init() {
     window.parseNLoad.blocking = (match('Safari') && !match('Chrome') && !match('Android') && match('Version/4')) || match('Opera');
 
     window.parseNLoad.icon = (function() {
+        if (match('Firefox')) return 'firefox';
         if (match('Android')) return 'android';
         if (match('Chrome')) return 'chrome';
         if (match('Safari')) return 'safari';
-        if (match('Firefox')) return 'firefox';
         if (match('Opera')) return 'opera';
         if (match('MSIE')) return 'ie';
         return '';
