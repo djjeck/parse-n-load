@@ -387,14 +387,19 @@ function makeCodeVersions(code) {
 
 function runTest() {
   var applet = YAHOO.util.Dom.get('use-nano').checked && document.getElementById('nanoTime');
-  time = applet ?
+  time = (applet && applet.Packages && applet.Packages.nano) ?
     (function(ns) {
       return function() {
         try {
-            return ns.nanoTime() / 1e6;
+          return ns.nanoTime() / 1e6;
         } catch(e) {
+          try {
             ns = new applet.Packages.nano; // reinstantiate
             return ns.nanoTime() / 1e6;
+          } catch(e) {
+            // can this happen, after all this checking?
+            return (new Date()).getTime();
+          }
         }
       };
     })(applet) :
