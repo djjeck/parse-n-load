@@ -95,9 +95,21 @@
         font-size: 0.8em;
         padding: 30px;
       }
-      #guide dt { font-weight: bold; }
+      #guide dd,
+      #guide dt {
+        display: block;
+      }
+      #guide dt {
+        font-size: 1.1em;
+        font-weight: bold;
+      }
       #guide pre {
         font-family: Courier, serif;
+        font-size: 0.95em;
+        line-height: 1.5em;
+        margin: 6px 0px;
+        padding: 5px;
+        background-color: #EEE;
       }
     </style>
     <script type="text/javascript" src="js/yui2.js"></script>
@@ -135,30 +147,27 @@
       <dl>
       </dl>
       <dt>Simple</dt>
-      <dd>Runs the code as it is.
+      <dd><br />Runs the code as it is.
         <pre>
-          JS_FRAGMENT;
-        </pre>
+JS_FRAGMENT;</pre>
       </dd>
       <dt>Parse and evaluate</dt>
-      <dd>Separates the phases of parsing and evaluation of the code.
+      <dd><br />Separates the phases of parsing and evaluation of the code.
         <br />The output is the following:
         <pre>
-          function parse(){
-            JS_FRAGMENT; // the browser will parse the whole code, but will not evaluate it
-          }
-          parse(); // evaluates the code
-        </pre>
+function parse() {
+  JS_FRAGMENT; // the browser will parse the whole code, but will not evaluate it
+}
+parse(); // evaluates the code</pre>
       </dd>
       <dt>eval()</dt>
-      <dd>Delays the parsing and evaluation of the code, treating it as a string
+      <dd><br />Delays the parsing and evaluation of the code, treating it as a string
         <br />The output is the following:
         <pre>
-          function parse_as_string(){
-            eval(escape(JS_FRAGMENT)) // the compiler will only see a long string inside a function that is not evaluated
-          }
-          parse_as_string(); // then the code is both parsed and evaluated
-        </pre>
+function parse_as_string() {
+  eval(escape(JS_FRAGMENT)); // the compiler will only see a long string inside a function that is not evaluated
+}
+parse_as_string(); // then the code is both parsed and evaluated</pre>
       </dd>
       Note that profiling for metrics in two steps are provided both summed up or separately.
     </div>
