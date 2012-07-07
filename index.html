@@ -46,7 +46,7 @@
         padding: 0px 4px;
       }
       button { padding: 5px 15px; }
-      
+
       #js-code {
         font-size: 10px;
         width: 75%;
@@ -89,6 +89,16 @@
         display:none;
       }
       #percentile-info { font-size: small; }
+
+      #guide {
+        text-align: left;
+        font-size: 0.8em;
+        padding: 30px;
+      }
+      #guide dt { font-weight: bold; }
+      #guide pre {
+        font-family: Courier, serif;
+      }
     </style>
     <script type="text/javascript" src="js/yui2.js"></script>
     <script type="text/javascript" src="js/yui.flot.js"></script>
@@ -120,6 +130,39 @@
     </fieldset>
 
     <div id="browser-info"></div>
+
+    <div id="guide">
+      <dl>
+      </dl>
+      <dt>Simple</dt>
+      <dd>Runs the code as it is.
+        <pre>
+          JS_FRAGMENT;
+        </pre>
+      </dd>
+      <dt>Parse and evaluate</dt>
+      <dd>Separates the phases of parsing and evaluation of the code.
+        <br />The output is the following:
+        <pre>
+          function parse(){
+            JS_FRAGMENT; // the browser will parse the whole code, but will not evaluate it
+          }
+          parse(); // evaluates the code
+        </pre>
+      </dd>
+      <dt>eval()</dt>
+      <dd>Delays the parsing and evaluation of the code, treating it as a string
+        <br />The output is the following:
+        <pre>
+          function parse_as_string(){
+            eval(escape(JS_FRAGMENT)) // the compiler will only see a long string inside a function that is not evaluated
+          }
+          parse_as_string(); // then the code is both parsed and evaluated
+        </pre>
+      </dd>
+      Note that profiling for metrics in two steps are provided both summed up or separately.
+    </div>
+
     <table id="results"></table>
 
     <div style="position:relative;display:inline-block;">

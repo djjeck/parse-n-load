@@ -406,6 +406,14 @@ function runTest() {
     function() {
       return (new Date()).getTime();
     };
+
+  { // move guide to the bottom
+    var guide = YAHOO.util.Dom.get('guide');
+    var guideParent = guide.parentNode;
+    guideParent.removeChild(guide);
+    guideParent.appendChild(guide);
+  }
+
   YAHOO.util.Dom.get('results').innerHTML = '<tr><th></th><th>Mean Average</th><th>Std. Deviation</th><th>Discarded samples</th></tr>';
 
   YAHOO.util.Dom.get('flot-container_parsing').style.visibility =
